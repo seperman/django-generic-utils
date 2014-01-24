@@ -1,0 +1,47 @@
+from django.db import models
+from django.utils import timezone
+import datetime
+
+class GenericManager(models.Manager):
+    
+    def flat_field_list_filtered(self, field, criteria, output="list"):
+        """"
+        Exports a list of a field's values as a list, dictionary or a comma seperated string
+        It does not support more than one field yet.
+        """
+        
+        result = self.filter(**criteria).values_list(field, flat=True)
+            
+        if output.startswith("dict"):
+            result = dict.fromkeys(result, True)
+        elif output.startswith("str"):
+            result = reduce(lambda x, y: "%i,%i" % (x, y), result)
+
+        return result
+
+
+    def get_or_none(self, **kwargs):
+        """
+        Gives you None if no result exists instead of raising an error
+        """
+        try:
+            return self.get(**kwargs)
+        except self.DoesNotExist:
+            return None
+
+
+    def select_old_objects(self, date_field_name, older_than_days):
+        """
+        selects objects newer than certain number of days ago
+        If you want to for example delete these old objects, run:
+        MyModel.select_old_objects(date_field_name="date_created", older_than_days=10).delete()
+        For date_field_name, you pass the name of the field.
+        """
+        older_than_days=int(older_than_days)
+        date_field_name = "%s__lte" % date_field_name
+        time_threshold = timezone.now() - datetime.timedelta(days=older_than_days)
+        the_filter={
+            date_field_name: time_threshold,
+        }
+        #it needs ** to feed the dictionary as kwargs to the filter
+        return self.filter(**the_filter)

@@ -5,30 +5,17 @@ Some generic functions
 from django.core.urlresolvers import reverse
 from django.core.cache import cache
 
-import datetime
-
-#######################
-# get_or_none
-#
-# Example:
-# 
-#######################
-
-
-def get_or_none(model, **kwargs):
-    """
-    example:
-    
-    foo = get_or_none(Foo, baz=bar)
-    """
-    try:
-        return model.objects.get(**kwargs)
-    except model.DoesNotExist:
-        return None
-
+# import datetime
 
 
 def int_with_default(n, default=0):
+    """
+    convert to int. if not possible then use a default value
+    example:
+    "3" -> 3
+    "sas" -> 0
+    """
+
     try:
         n = int(n)
     except ValueError:
@@ -38,31 +25,20 @@ def int_with_default(n, default=0):
 
 
 
-def url_to_edit_object(object):
-    return reverse('admin:%s_%s_change' %(object._meta.app_label,  object._meta.module_name),  args=[object.id] )
-
-
-def url_to_list_view_of_object(object):
-    return reverse('admin:%s_%s_changelist' % (object._meta.app_label,  object._meta.module_name))
-
-
-
-def select_old_objects(the_model, date_field_name, older_than_days):
+def url_to_edit_object(obj):
     """
-    selects objects old than certain days ago
-    If you want to for example delete these old objects, run:
-    select_old_objects(the_model=ApArticle, date_field_name="date_created", older_than_days=10).delete()
-    Note that model itself should be passed here and not the name of the model.
-    However for date_field_name, you pass the name of the field.
+    url to edit an object in admin
     """
-    older_than_days=int(older_than_days)
-    date_field_name = "%s__lte" % date_field_name
-    time_threshold = datetime.datetime.now() - datetime.timedelta(days=older_than_days)
-    the_filter={
-        date_field_name: time_threshold,
-    }
-    #it needs ** to feed the dictionary as kwargs to the filter
-    return the_model.objects.filter(**the_filter)
+    return reverse('admin:%s_%s_change' %(obj._meta.app_label,  obj._meta.module_name),  args=[obj.id] )
+
+
+def url_to_list_view_of_object(obj):
+    """
+    url to list view of an object in admin
+    """
+    return reverse('admin:%s_%s_changelist' % (obj._meta.app_label,  obj._meta.module_name))
+
+
 
 
 
@@ -98,3 +74,10 @@ def serial_func(key, time=3600, func=lambda: None):
             cache.delete(key)
     return result
 
+
+
+def model_fields_list(m):
+    """
+    returns a list of a Django model's fields
+    """
+    return m._meta.get_all_field_names() 
