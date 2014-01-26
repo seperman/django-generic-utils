@@ -2,6 +2,12 @@ from django.db import models
 from django.utils import timezone
 import datetime
 
+import logging
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+
+
 class GenericManager(models.Manager):
     
     def flat_field_list_filtered(self, field, criteria, output="list"):
@@ -11,12 +17,17 @@ class GenericManager(models.Manager):
         """
         
         result = self.filter(**criteria).values_list(field, flat=True)
-            
+        # import pdb
+        # pdb.set_trace()
+
+
         if output.startswith("dict"):
             result = dict.fromkeys(result, True)
         elif output.startswith("str"):
-            result = reduce(lambda x, y: "%i,%i" % (x, y), result)
+            result = reduce(lambda x, y: "%s,%s" % (x, y), result)
 
+        logger.info("flat_field_list_filtered result: %s" % result)
+        
         return result
 
 
