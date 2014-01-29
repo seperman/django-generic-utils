@@ -19,9 +19,24 @@ def task_status(request):
 
     if job_id:
         job = AsyncResult(job_id)
-        data = job.progress_percent or job.state
+
+        state = job.state
+        try:
+            percent = job.progress_percent
+        except AttributeError:
+             
+            if state == "STARTED":
+                percent = 10
+            elif state == "SUCCESS":
+                percent = 100
+            else:
+                percent = 0
+    
+        data = {"progress_percent": percent, "state": state, }
+
     else:
         data = False
+
 
     return HttpResponse(json.dumps(data), mimetype='application/json')
 
