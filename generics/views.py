@@ -1,4 +1,4 @@
-from celery.result import AsyncResult
+from django.core.cache import cache
 import json
 
 from django.core.exceptions import PermissionDenied
@@ -10,33 +10,22 @@ def task_status(request):
     if not request.user.is_authenticated():
         raise PermissionDenied
 
-    if request.is_ajax():
-        job_id = request.POST.get('id', False)
-    elif request.method == "GET":
-        job_id = request.GET.get('id', False)
+    if request.method == "GET":
+        task_id = request.GET.get('id', False)
+    elif request.method == "POST":
+        task_id = request.POST.get('id', False)
     else:
-        job_id = False
+        task_id = False
 
-    if job_id:
-        job = AsyncResult(job_id)
-
-        state = job.state
-        try:
-            percent = job.progress_percent
-        except AttributeError:
-             
-            if state == "STARTED":
-                percent = 10
-            elif state == "SUCCESS":
-                percent = 100
-            else:
-                percent = 0
-    
-        data = {"progress_percent": percent, "state": state, }
-
+    if task_id:
+        # job = AsyncResult(task_id)
+        # job.result.state
+        task_stat = cache.get("celery-stat-%s" % task_id)
+        if task_stat['user_id'] != request.user.id:
+            task_stat = None
     else:
-        data = False
+        task_stat = None
 
 
-    return HttpResponse(json.dumps(data), mimetype='application/json')
+    return HttpResponse(json.dumps(task_stat), mimetype='application/json')
 
