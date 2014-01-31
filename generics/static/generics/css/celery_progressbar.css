@@ -1,0 +1,24 @@
+.ui-progressbar {
+  position: relative;
+  height:15px;
+  width:150px;
+}
+
+.ui-widget {
+  font-size: 12px;
+}
+
+.progress-label {
+  position: absolute;
+  font-size: 8px;
+  left: 20%;
+  top: 2px;
+  font-weight: normal;
+  text-shadow: 1px 1px 0 #fff;
+}
+
+.cancel-task{
+  font-size: 10px;
+  margin-left: 3px;
+  vertical-align: text-bottom;'
+  }
