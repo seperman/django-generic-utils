@@ -6,6 +6,12 @@ from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse
 # from django.core.cache import cache
 
+import logging
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+
+
 def task_api(request):
     """ A view to report the progress to the user """
     if not request.user.is_authenticated() or not request.user.is_active:
@@ -33,7 +39,8 @@ def task_api(request):
     else:
         task_stat = None
 
-    if task_stat and terminate:
+    if task_stat and terminate=="1":
+        logger.info("terminate: %s" % terminate)
         revoke(task_id, terminate=True)
 
 
