@@ -7,7 +7,7 @@ class celery_progressbar_stat(object):
         Example usage:
         from celery import current_task
         from generics.tasks import celery_progressbar_stat 
-        
+
         c = celery_progressbar_stat(current_task, user_id)
         c.percent=10
 

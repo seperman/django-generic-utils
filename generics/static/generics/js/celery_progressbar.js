@@ -21,6 +21,7 @@ function progess_class(options){
   var progressLabel;
   var progressbar_updator;
   var terminate = 0;
+  var jquery_dialog = options.jquery_dialog || "true";
 
 
   var run_task = function(task_url) {
@@ -49,7 +50,7 @@ function progess_class(options){
       waiting = true;
 
       $.ajax( {
-      url: "generics/task_api",
+      url: "/generics/task_api",
       cache: false,
       data: {id: the_id, terminate: terminate}
       } )
@@ -91,6 +92,7 @@ function progess_class(options){
 
 
   var make_progress_bar = function() {
+    
     $("#progressbar-container").append("<div id='container-"+the_id+"'>\
         <div style='display: inline-block;'>\
           <div id='progressbar'>\
@@ -98,16 +100,19 @@ function progess_class(options){
           </div>\
         </div>\
         <div style='display: inline-block;'>\
-          <button class='cancel-task'>X</button>\
+          <button type='button' class='cancel-task'>X</button>\
         </div>\
       </div>");
 
 
     $(the_container+' .cancel-task').click(function(){
-        dialog_delete_task();
+        if (jquery_dialog===true){
+          dialog_delete_task();
+        } else {
+          dialog_delete_task_simple();
+        }
       } 
     ).button({ icons: { primary: "ui-icon-circle-close" }, text: false });
-    // $(the_container+' .cancel-task')
 
 
     progressbar = $( the_container+" #progressbar" );
@@ -137,6 +142,7 @@ function progess_class(options){
       var task_delete_dialog = $( "#task-delete-dialog-confirm" );
       task_delete_dialog.show();
       task_delete_dialog.dialog({
+        dialogClass: 'no-close delete-task-dialog',
         resizable: false,
         height:180, 
         modal: true,
@@ -152,6 +158,14 @@ function progess_class(options){
       });
     });
   }
+  var dialog_delete_task_simple = function()
+    {
+      var r=confirm("Are you sure?");
+      if (r===true)
+        {
+          terminate = 1;
+        }
+    }
 
   run_task(task_url);
 }
