@@ -103,6 +103,14 @@ function progess_class(options){
         if (msg !== null) {
           // console.log(the_id + " :: " + msg.progress_percent + " " + s)
           progress(msg.progress_percent);
+
+          // checking to see if the state starts with error:
+          if (msg.state.lastIndexOf("Err", 0) === 0 ){
+            alert( msg.state + " :: " + task_name);
+            task_name = "Err: "+ task_name;
+            waiting = true;
+            terminate = 1;
+          }
           waiting = false;
         };
       })
