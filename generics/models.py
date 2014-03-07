@@ -21,12 +21,14 @@ class GenericManager(models.Manager):
         # pdb.set_trace()
 
 
-        if output.startswith("dict"):
+        if output == "dict":
             result = dict.fromkeys(result, True)
-        elif output.startswith("str"):
+        elif output == "str":
             result = reduce(lambda x, y: "%s,%s" % (x, y), result)
+        elif output == "list_of_strings":
+            result = map(str, result)
 
-        logger.info("flat_field_list_filtered result: %s" % result)
+        # logger.info("flat_field_list_filtered result: %s" % result)
         
         return result
 
