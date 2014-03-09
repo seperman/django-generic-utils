@@ -16,7 +16,9 @@ class GenericManager(models.Manager):
         It does not support more than one field yet.
         """
         
-        result = self.filter(**criteria).values_list(field, flat=True)
+        empty_criteria = {field:""}
+        # removing empty results
+        result = self.filter(**criteria).exclude(**empty_criteria).values_list(field, flat=True)
         # import pdb
         # pdb.set_trace()
 
