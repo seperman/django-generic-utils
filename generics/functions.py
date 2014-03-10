@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 """
 Some generic functions
 """
@@ -64,10 +66,10 @@ def serial_func(key, time=3600, func=lambda: None):
     """
     result = None
     if cache.get(key):
-        print "This function is already running"
+        print ("This function is already running")
     else:
         #setting a key that cache is running
-        cache.set(key, True, 3600)
+        cache.set(key, True, time)
         try:
             result = func()
         finally:
@@ -76,8 +78,37 @@ def serial_func(key, time=3600, func=lambda: None):
 
 
 
+def serial_block_begin(key, time=120, block_return="This function is already running"):
+    """
+    sets a key in cache when running a block of code to make sure the same block
+    can't run more than one time at once. This is useful for example in Celery tasks.
+    """
+    if cache.get(key):
+        print ("This function is already running")
+        return block_return
+    else:
+        #setting a key that cache is running
+        cache.set(key, True, time)
+        return key
+
+
+def serial_block_end(key):
+    """
+    works in conjunction of the serial_block_begin to let the function run again.
+    """
+    cache.delete(key)
+
+
+
 def model_fields_list(m):
     """
     returns a list of a Django model's fields
     """
     return m._meta.get_all_field_names() 
+
+
+def model_field_type(m, f):
+    """
+    returns a mode's field's type (ie. Integer field or ...)
+    """
+    return m._meta.get_field(f).get_internal_type()

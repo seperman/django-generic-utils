@@ -15,8 +15,11 @@ class GenericManager(models.Manager):
         Exports a list of a field's values as a list, dictionary or a comma seperated string
         It does not support more than one field yet.
         """
-        
-        empty_criteria = {field:""}
+        if self.model._meta.get_field('id').get_internal_type() == "CharField":
+            empty_criteria = {field:""}
+        else:
+            empty_criteria = {field+"__isNull":True}
+
         # removing empty results
         result = self.filter(**criteria).exclude(**empty_criteria).values_list(field, flat=True)
         # import pdb
