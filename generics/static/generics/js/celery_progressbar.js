@@ -68,10 +68,15 @@ function progess_class(options){
     data: {}
     } )
     .done(function(msg) {
-      the_id = msg;
-      the_container = "#container-" + the_id;
+      // checking to see if the msg startswith error
+      if (msg.lastIndexOf("Err", 0) === 0 ){
+        alert( msg + " :: " + task_name);
+      } else {
+        the_id = msg;
+        the_container = "#container-" + the_id;
 
-      make_progress_bar();
+        make_progress_bar();
+      }
     })
     .fail(function(err) {
       alert( "error running the task: " + err );
@@ -129,6 +134,9 @@ function progess_class(options){
       //waiting is True
     } else {
       waiting_cycle = ++waiting_cycle;
+      
+      progressLabel.text( task_name +": Waiting " + waiting_cycle);
+
       if (waiting_cycle > waiting_for_cycles){
         waiting_cycle = 0;
         waiting = false;
@@ -164,6 +172,7 @@ function progess_class(options){
 
     progressbar = $( the_container+" #progressbar" );
     progressLabel = $( the_container+" .progress-label" );
+    progressLabel.text( task_name );
 
     $(function() {
 

@@ -78,18 +78,23 @@ def serial_func(key, time=3600, func=lambda: None):
 
 
 
-def serial_block_begin(key, time=120, block_return="This function is already running"):
+def serial_block_check(key):
+    return cache.get(key)
+
+
+
+def serial_block_begin(key, time=120):
     """
     sets a key in cache when running a block of code to make sure the same block
     can't run more than one time at once. This is useful for example in Celery tasks.
     """
     if cache.get(key):
         print ("This function is already running")
-        return block_return
+        return True
     else:
         #setting a key that cache is running
         cache.set(key, True, time)
-        return key
+        return False
 
 
 def serial_block_end(key):
