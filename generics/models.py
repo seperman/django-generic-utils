@@ -18,7 +18,7 @@ class GenericManager(models.Manager):
         if self.model._meta.get_field('id').get_internal_type() == "CharField":
             empty_criteria = {field:""}
         else:
-            empty_criteria = {field+"__isNull":True}
+            empty_criteria = {field+"__isnull":True}
 
         # removing empty results
         result = self.filter(**criteria).exclude(**empty_criteria).values_list(field, flat=True)
