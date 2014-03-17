@@ -1,3 +1,4 @@
+import os
 from setuptools import setup #, find_packages
 
 try:
@@ -6,15 +7,20 @@ try:
 except:
     long_description = "Generic Useful Django Classes/Functions"
 
-setup(name='django-generics',
-      version='0.1.7',
+
+# allow setup.py to be run from any path
+os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
+
+setup(name='django-generic-utils',
+      version='0.1.8',
       description='Generic Useful Django Classes/Functions',
-      url='https://github.com/erasmose/django-generics',
-      download_url='https://github.com/erasmose/django-generics/tarball/master',
+      url='https://github.com/erasmose/django-generic-utils',
+      download_url='https://github.com/erasmose/django-generic-utils/tarball/master',
       author='Erasmose',
       author_email='sep@zepworks.com',
       license='MIT',
-      packages=['django-generics'],
+      packages=['django-generic-utils'],
+      include_package_data=True,
       zip_safe=False,
       install_requires=[
         "django",
@@ -23,8 +29,14 @@ setup(name='django-generics',
       ],
       long_description=long_description,
       classifiers=[
+        'Environment :: Web Environment',
+        'Framework :: Django',
+        'License :: MIT License',
         "Intended Audience :: Developers",
         "Operating System :: OS Independent",
-        "Topic :: Software Development"
+        "Topic :: Software Development",
+        'Programming Language :: Python',
+        'Topic :: Internet :: WWW/HTTP',
+        'Topic :: Internet :: WWW/HTTP :: Dynamic Content',        
         ],
       )
