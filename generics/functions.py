@@ -127,6 +127,9 @@ def url_exists(url, timeout=10):
     Otherwise it will return False if the URL didn't return 200 code.
     It will raise an error if the protocol is not supported.
 
+    HTTP codes: 
+    http://docs.python.org/2/library/httplib.html
+    
     Example:
     url="http://hello.com/img/2014/02/08/Cushion_-_loose_stone_1.jpg"
     url_exists(url)
@@ -139,7 +142,10 @@ def url_exists(url, timeout=10):
         conn.request('HEAD', o.path)
         response = conn.getresponse()
         conn.close()
-        result = response.status == 200
+        if response.status == 200:
+            result = True
+        else:
+            result = response.status
     else:
         raise Exception("%s protocol is not implemented yet in Django Generic Utils" % o.scheme)
     return result
