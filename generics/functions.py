@@ -6,6 +6,8 @@ Some generic functions
 
 from django.core.urlresolvers import reverse
 from django.core.cache import cache
+import httplib
+from urlparse import urlparse
 
 # import datetime
 
@@ -117,3 +119,29 @@ def model_field_type(m, f):
     returns a mode's field's type (ie. Integer field or ...)
     """
     return m._meta.get_field(f).get_internal_type()
+
+
+def url_exists(url):
+    """
+    Checks if a URL exists. Returns True if it can check.
+    Otherwise it will return False if the URL didn't return 200 code.
+    It will raise an error if the protocol is not supported.
+
+    Example:
+    url="http://hello.com/img/2014/02/08/Cushion_-_loose_stone_1.jpg"
+    url_exists(url)
+    True
+    """
+    o = urlparse(url)
+    #
+    if o.scheme=="http":
+        conn = httplib.HTTPConnection(o.netloc, 80, timeout=10)
+        conn.request('HEAD', o.path)
+        response = conn.getresponse()
+        conn.close()
+        result = response.status == 200
+    else:
+        raise Exception("%s protocol is not implemented yet in Django Generic Utils" % o.scheme)
+    return result
+
+
