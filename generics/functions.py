@@ -121,7 +121,7 @@ def model_field_type(m, f):
     return m._meta.get_field(f).get_internal_type()
 
 
-def url_exists(url):
+def url_exists(url, timeout=10):
     """
     Checks if a URL exists. Returns True if it can check.
     Otherwise it will return False if the URL didn't return 200 code.
@@ -135,7 +135,7 @@ def url_exists(url):
     o = urlparse(url)
     #
     if o.scheme=="http":
-        conn = httplib.HTTPConnection(o.netloc, 80, timeout=10)
+        conn = httplib.HTTPConnection(o.netloc, 80, timeout=timeout)
         conn.request('HEAD', o.path)
         response = conn.getresponse()
         conn.close()
