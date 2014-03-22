@@ -42,7 +42,7 @@ $.ajaxSetup({
 
 
 
-function progess_class(options){
+function progress_class(options){
 
   var task_url = options.task_url;
   var task_name = options.task_name || "task";
@@ -70,7 +70,7 @@ function progess_class(options){
     .done(function(msg) {
       // checking to see if the msg startswith error
       if (msg.lastIndexOf("Err", 0) === 0 ){
-        alert( msg + " :: " + task_name);
+        alert( task_name + " :: " + msg );
       } else {
         the_id = msg;
         the_container = "#container-" + the_id;
@@ -107,11 +107,14 @@ function progess_class(options){
 
         if (msg !== null) {
           // console.log(the_id + " :: " + msg.progress_percent + " " + s)
+          if (msg.state !== null && msg.state !=="") {
+            task_name = msg.state;
+          }
           progress(msg.progress_percent);
 
           // checking to see if the state starts with error:
           if (msg.state.lastIndexOf("Err", 0) === 0 ){
-            alert( msg.state + " :: " + task_name);
+            alert(task_name +" :: " + msg.state);
             task_name = "Err: "+ task_name;
             waiting = true;
             terminate = 1;

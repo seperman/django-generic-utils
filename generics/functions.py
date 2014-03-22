@@ -64,7 +64,8 @@ def get_or_cache(key, time=3600,func=lambda: None):
 def serial_func(key, time=3600, func=lambda: None, kwargs={}):
     """
     sets a key in cache when running a function to make sure the same function
-    can't run more than one time at once
+    can't run more than one time at once.
+    It will clear the key if the function raises any errors.
     """
     result = None
     if cache.get(key):
