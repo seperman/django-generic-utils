@@ -1,5 +1,8 @@
 from django.core.cache import cache
 
+import logging
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 class celery_progressbar_stat(object):
     """ updates the progress bar info for the task.
@@ -19,6 +22,7 @@ class celery_progressbar_stat(object):
         self.task_stat_id = "celery-stat-%s" % task.request.id
         self.cache_time = cache_time
         self.result={'state':"IN PROGRESS", 'progress_percent': 0, 'user_id':user_id}
+        self.no_error_caught = True
 
     def get_percent(self):
         return self.result["progress_percent"]
@@ -36,6 +40,14 @@ class celery_progressbar_stat(object):
 
     def set_cache(self):
         cache.set(self.task_stat_id, self.result, self.cache_time)
+
+    def raise_err(self, msg):
+        # We check to see if an error is not already caught. Since we don't want to re-raise the same error up.
+        if self.no_error_caught:
+            self.no_error_caught = False
+            self.state = msg
+            logger.error(msg)
+            raise      
 
     percent = property(get_percent, set_percent,) 
     state = property(get_state, set_state,) 
