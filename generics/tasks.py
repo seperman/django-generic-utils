@@ -43,11 +43,11 @@ class celery_progressbar_stat(object):
 
     def raise_err(self, msg):
         # We check to see if an error is not already caught. Since we don't want to re-raise the same error up.
+        # However you have to raise the error yourself in your code
         if self.no_error_caught:
             self.no_error_caught = False
             self.state = msg
             logger.error(msg)
-            raise      
 
     percent = property(get_percent, set_percent,) 
     state = property(get_state, set_state,) 
