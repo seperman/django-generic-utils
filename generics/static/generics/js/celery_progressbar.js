@@ -116,8 +116,7 @@ function progress_class(options){
 
           // checking to see if the state starts with error:
           if (msg.state.lastIndexOf("Err", 0) === 0 ){
-            alert(task_name +" :: " + msg.state);
-            task_name = "Err: "+ task_name.slice(0,30);
+            alert(msg.state);
             waiting = true;
             terminate = 1;
           }
