@@ -49,7 +49,9 @@ function progress_class(options){
   var sec = options.sec*1000 || 5000;
   var waiting = false;
   var waiting_for_cycles = options.waiting_for_cycles || 4;
+  var waiting_for_cycles_major = options.waiting_for_cycles || 5;  // waiting_for_cycles*waiting_for_cycles_major*sec = TIMEOUT time 
   var waiting_cycle = 0;
+  var waiting_cycle_major = 0;
   var err_count = 0;
   var the_id;
   var the_container;
@@ -108,14 +110,14 @@ function progress_class(options){
         if (msg !== null) {
           // console.log(the_id + " :: " + msg.progress_percent + " " + s)
           if (msg.state !== null && msg.state !=="") {
-            task_name = msg.state;
+            task_name = msg.state.slice(0,32);
           }
           progress(msg.progress_percent);
 
           // checking to see if the state starts with error:
           if (msg.state.lastIndexOf("Err", 0) === 0 ){
             alert(task_name +" :: " + msg.state);
-            task_name = "Err: "+ task_name;
+            task_name = "Err: "+ task_name.slice(0,30);
             waiting = true;
             terminate = 1;
           }
@@ -141,8 +143,13 @@ function progress_class(options){
       progressLabel.text( task_name +": Waiting " + waiting_cycle);
 
       if (waiting_cycle > waiting_for_cycles){
+        waiting_cycle_major=++waiting_cycle_major;
         waiting_cycle = 0;
         waiting = false;
+      }
+      if (waiting_cycle_major > waiting_for_cycles_major){
+        alert(task_name + ":TIMEOUT! Please try again later.");
+        terminate = 1;
       }
     }
   }
