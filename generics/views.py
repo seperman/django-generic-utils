@@ -1,9 +1,9 @@
 from django.core.cache import cache
 import json
 # from celery.result import AsyncResult
-from celery.task.control import revoke
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse
+from celery.task.control import revoke
 # from django.core.cache import cache
 
 import logging
@@ -14,6 +14,7 @@ logger.setLevel(logging.INFO)
 
 def task_api(request):
     """ A view to report the progress to the user """
+
     if not request.user.is_authenticated() or not request.user.is_active:
         raise PermissionDenied
 
