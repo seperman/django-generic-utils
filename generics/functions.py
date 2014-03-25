@@ -46,7 +46,7 @@ def url_to_list_view_of_object(obj):
 
 
 
-def get_or_cache(key, time=3600,func=lambda: None):
+def get_or_cache(key, time=3600,func=lambda: None, kwargs={}):
     """
     if the key already exists in the Memcached, then it returns the value.
     Otherwise runs a function (func) and puts it in the cache
@@ -55,7 +55,7 @@ def get_or_cache(key, time=3600,func=lambda: None):
     result = cache.get(key)
     
     if not result:
-        result = func()
+        result = func(**kwargs)
         cache.set(key, result, time)
     
     return result
