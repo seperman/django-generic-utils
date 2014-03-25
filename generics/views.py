@@ -3,13 +3,19 @@ import json
 # from celery.result import AsyncResult
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse
-from celery.task.control import revoke
 # from django.core.cache import cache
 
 import logging
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
+#Trying to load celery
+try:
+    from celery.task.control import revoke
+except:
+    logger.info("celery was not found. Loading a mock version", exc_info=True)
+    def revoke(*args, **kwargs):
+        return None
 
 
 def task_api(request):

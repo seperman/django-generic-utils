@@ -36,3 +36,4 @@ nosetests.xml
 .pydevproject
 
 copy_to_diamond.ps1
+tennis_copy_generics.sh
