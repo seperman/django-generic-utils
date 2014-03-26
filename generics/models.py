@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils import timezone
-import datetime
+from django.contrib.auth.models import User
 
 import logging
 logger = logging.getLogger(__name__)
@@ -57,9 +57,25 @@ class GenericManager(models.Manager):
         """
         older_than_days=int(older_than_days)
         date_field_name = "%s__lte" % date_field_name
-        time_threshold = timezone.now() - datetime.timedelta(days=older_than_days)
+        time_threshold = timezone.now() - timezone.timedelta(days=older_than_days)
         the_filter={
             date_field_name: time_threshold,
         }
         #it needs ** to feed the dictionary as kwargs to the filter
         return self.filter(**the_filter)
+
+
+
+class Messages(models.Model):
+    """
+    Messages for users
+    """
+
+    msg = models.CharField("Message", max_length=255)
+    users = models.ManyToManyField(User, help_text="Users who need to akhnowledge this message")
+    
+    def __unicode__(self):
+        return self.name
+
+
+

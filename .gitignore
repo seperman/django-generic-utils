@@ -37,3 +37,4 @@ nosetests.xml
 
 copy_to_diamond.ps1
 tennis_copy_generics.sh
+diamond_copy_generics.sh
