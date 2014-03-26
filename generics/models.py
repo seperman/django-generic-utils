@@ -10,7 +10,7 @@ logger.setLevel(logging.INFO)
 
 class GenericManager(models.Manager):
     
-    def flat_field_list_filtered(self, field, criteria, output="list"):
+    def flat_field_list_filtered(self, field, criteria={}, output="list"):
         """"
         Exports a list of a field's values as a list, dictionary or a comma seperated string
         It does not support more than one field yet.
@@ -71,11 +71,13 @@ class Messages(models.Model):
     Messages for users
     """
 
+    objects = GenericManager()
+
     msg = models.CharField("Message", max_length=255)
     users = models.ManyToManyField(User, help_text="Users who need to akhnowledge this message")
     
     def __unicode__(self):
-        return self.name
+        return self.msg[:40]
 
 
 

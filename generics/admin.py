@@ -7,6 +7,8 @@ class MessagesAdmin(admin.ModelAdmin):
     verbose_name_plural = 'Messages'
     verbose_name = 'Message'
 
+    filter_horizontal = ("users",)
+
     list_display = ("id", "msg", )
 
 admin.site.register(Messages, MessagesAdmin)
