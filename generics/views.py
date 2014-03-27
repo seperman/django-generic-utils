@@ -2,8 +2,11 @@ from django.core.cache import cache
 import json
 # from celery.result import AsyncResult
 from django.core.exceptions import PermissionDenied
+from django.http import Http404
 from django.http import HttpResponse
 # from django.core.cache import cache
+
+from generics.models import Messages
 
 import logging
 logger = logging.getLogger(__name__)
@@ -54,3 +57,32 @@ def task_api(request):
 
 
     return HttpResponse(json.dumps(task_stat), mimetype='application/json')
+
+
+
+
+def messages_api(request):
+    """ A view to akhnowledge messages by users """
+
+    if not request.user.is_authenticated() or not request.user.is_active:
+        raise PermissionDenied
+
+    if request.method == "GET":
+        message_id = request.GET.get('id', False)
+    elif request.method == "POST":
+        message_id = request.POST.get('id', False)
+    else:
+        message_id = False
+
+    result = None
+
+    if message_id:
+        try:
+            m = Messages.objects.get(pk=message_id)
+            m.users.remove(request.user)
+            result = "Removed"
+        except Messages.DoesNotExist:
+            raise Http404
+
+    return HttpResponse(json.dumps(result), mimetype='application/json')
+
