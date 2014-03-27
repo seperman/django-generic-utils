@@ -40,48 +40,6 @@ $.ajaxSetup({
 
 
 //-------------------------------------------------------------------------------
-// User Messages
-//-------------------------------------------------------------------------------
-
-function akhnowledge_msg_class(options){
-
-  var messages_url = options.messages_url;
-  var msg_name = options.msg_name || "task";
-
-
-  var akhnowledge_msg = function(messages_url) {
-    $.ajax( {
-    url: messages_url,
-    type: "POST",
-    data: {}
-    } )
-    .done(function(msg) {
-      // checking to see if the msg startswith error
-      if (msg.lastIndexOf("Err", 0) === 0 ){
-        alert( msg_name + " :: " + msg );
-      } else {
-        console.log(msg);
-      }
-    })
-    .fail(function(err) {
-      alert( "error running the task: " + err );
-    });
-  };
-  
-
-  akhnowledge_msg(messages_url);
-}
-
-
-var akhnowledge_msg_object = function(){
-  akhnowledge_msg_class({
-    messages_url: "/generics/messages_api",
-    msg_name: "The message name",
-  });
-};
-
-
-//-------------------------------------------------------------------------------
 // Celery Progress Bar
 //-------------------------------------------------------------------------------
 

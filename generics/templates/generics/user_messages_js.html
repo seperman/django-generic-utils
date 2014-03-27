@@ -1,0 +1,17 @@
+<script type="text/javascript" charset="utf-8">
+    {% if user_messages %}
+        $(document).ready(function() {
+            {% for message in user_messages %}
+                $(".user-message-btn-{{ message.id }}").click(function(){
+                    $.get("/generics/messages_api?id={{ message.id }}&action=remove")
+                        .done(function( data ) {
+                            $(".user-message-{{ message.id }}").remove();
+                        })
+                        .fail(function( data ) {
+                            alert("Data: " + data);
+                        });
+                    });
+            {% endfor %}
+        });
+    {% endif %}
+</script>

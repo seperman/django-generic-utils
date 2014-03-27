@@ -9,6 +9,6 @@ class MessagesAdmin(admin.ModelAdmin):
 
     filter_horizontal = ("users",)
 
-    list_display = ("id", "msg", )
+    list_display = ("msg", "id",)
 
 admin.site.register(Messages, MessagesAdmin)

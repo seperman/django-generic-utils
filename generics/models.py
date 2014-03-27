@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
+import types
 
 import logging
 logger = logging.getLogger(__name__)
@@ -10,28 +11,48 @@ logger.setLevel(logging.INFO)
 
 class GenericManager(models.Manager):
     
-    def flat_field_list_filtered(self, field, criteria={}, output="list"):
+    def flat_field_list_filtered(self, fields=None, field=None, criteria={}, output="list"):
         """"
         Exports a list of a field's values as a list, dictionary or a comma seperated string
-        It does not support more than one field yet.
         """
-        if self.model._meta.get_field('id').get_internal_type() == "CharField":
-            empty_criteria = {field:""}
+        if isinstance(field, types.StringTypes):
+            fields = (field,)
+            only_one_field = True
         else:
-            empty_criteria = {field+"__isnull":True}
+            only_one_field = False
+
+        empty_criteria = {}
+
+        for f in fields:
+            if self.model._meta.get_field(f).get_internal_type() == "CharField":
+                empty_criteria[f] = ""
+            else:
+                empty_criteria[f+"__isnull"] = True
 
         # removing empty results
-        result = self.filter(**criteria).exclude(**empty_criteria).values_list(field, flat=True)
+        if only_one_field:
+            result = self.filter(**criteria).exclude(**empty_criteria).values_list(*fields, flat=True)
+            if output == "dict":
+                result = dict.fromkeys(result, True)
+            elif output == "str":
+                result = reduce(lambda x, y: "%s,%s" % (x, y), result)
+            elif output == "list_of_strings":
+                result = map(str, result)
+            elif output == "list":
+                pass
+            else:
+                raise Exception("Only 'list', 'dict','str' and 'list_of_strings' as output are supported for single field input")
+        else:
+            if output == "list":
+                result = self.filter(**criteria).exclude(**empty_criteria).values_list(*fields)
+            elif output == "list_of_dict":
+                result = self.filter(**criteria).exclude(**empty_criteria).values(*fields)
+            else:
+                raise Exception("Only 'list' and 'list_of_dict' as output are supported for multi field input")
+
         # import pdb
         # pdb.set_trace()
-
-
-        if output == "dict":
-            result = dict.fromkeys(result, True)
-        elif output == "str":
-            result = reduce(lambda x, y: "%s,%s" % (x, y), result)
-        elif output == "list_of_strings":
-            result = map(str, result)
+        
 
         # logger.info("flat_field_list_filtered result: %s" % result)
         
