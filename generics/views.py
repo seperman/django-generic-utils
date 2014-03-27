@@ -69,20 +69,23 @@ def messages_api(request):
 
     if request.method == "GET":
         message_id = request.GET.get('id', False)
+        action = request.GET.get('action', False)
     elif request.method == "POST":
         message_id = request.POST.get('id', False)
+        action = request.POST.get('action', False)
     else:
         message_id = False
 
     result = None
 
-    if message_id:
-        try:
-            m = Messages.objects.get(pk=message_id)
-            m.users.remove(request.user)
-            result = "Removed"
-        except Messages.DoesNotExist:
-            raise Http404
+    if message_id and action:
+        if action=="remove":
+            try:
+                m = Messages.objects.get(pk=message_id)
+                m.users.remove(request.user)
+                result = "Removed"
+            except Messages.DoesNotExist:
+                raise Http404
 
     return HttpResponse(json.dumps(result), mimetype='application/json')
 

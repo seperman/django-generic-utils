@@ -7,7 +7,7 @@ class MessageAll(object):
 
     def process_template_response(self, request, response):
 
-        msg = request.user.messages_set.flat_field_list_filtered(field='msg',criteria={})
+        msg = request.user.messages_set.flat_field_list_filtered(field='msg', criteria={}, output="list_of_strings")
 
 
         if msg:
