@@ -87,6 +87,22 @@ class GenericManager(models.Manager):
 
 
 
+
+
+class MessagesStatus(models.Model):
+    message = models.ForeignKey('Messages', related_name="status_of_messaged_users")
+    user = models.ForeignKey(User, related_name="status_of_user_messages")
+    akhnowledge_date = models.DateTimeField(editable=False, null=True, default=None)
+
+    def __unicode__(self):
+        if self.akhnowledge_date:
+            return "%s akhnowledged %s on %s" % (self.user, self.message, self.akhnowledge_date)
+
+
+
+
+
+
 class Messages(models.Model):
     """
     Messages for users
@@ -95,7 +111,7 @@ class Messages(models.Model):
     objects = GenericManager()
 
     msg = models.CharField("Message", max_length=255)
-    users = models.ManyToManyField(User, help_text="Users who need to akhnowledge this message")
+    users = models.ManyToManyField(User, through=MessagesStatus, related_name="messages_of_user",help_text="Users who need to akhnowledge this message")
     
     def __unicode__(self):
         return self.msg[:40]

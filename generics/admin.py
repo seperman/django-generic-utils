@@ -1,13 +1,16 @@
 from django.contrib import admin
 
 from generics.models import Messages
+from generics.forms import MessagesStatusForm
 
 class MessagesAdmin(admin.ModelAdmin):
     model = Messages
     verbose_name_plural = 'Messages'
     verbose_name = 'Message'
 
-    filter_horizontal = ("users",)
+    form = MessagesStatusForm
+
+    # filter_horizontal = ("users",)
 
     list_display = ("msg", "id",)
 

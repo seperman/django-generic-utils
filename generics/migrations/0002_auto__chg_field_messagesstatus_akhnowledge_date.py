@@ -8,30 +8,14 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding model 'MessagesStatus'
-        db.create_table(u'generics_messagesstatus', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('message', self.gf('django.db.models.fields.related.ForeignKey')(related_name='status_of_messaged_users', to=orm['generics.Messages'])),
-            ('user', self.gf('django.db.models.fields.related.ForeignKey')(related_name='status_of_user_messages', to=orm['auth.User'])),
-            ('akhnowledge_date', self.gf('django.db.models.fields.DateTimeField')()),
-        ))
-        db.send_create_signal(u'generics', ['MessagesStatus'])
 
-        # Adding model 'Messages'
-        db.create_table(u'generics_messages', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('msg', self.gf('django.db.models.fields.CharField')(max_length=255)),
-        ))
-        db.send_create_signal(u'generics', ['Messages'])
-
+        # Changing field 'MessagesStatus.akhnowledge_date'
+        db.alter_column(u'generics_messagesstatus', 'akhnowledge_date', self.gf('django.db.models.fields.DateTimeField')(null=True))
 
     def backwards(self, orm):
-        # Deleting model 'MessagesStatus'
-        db.delete_table(u'generics_messagesstatus')
 
-        # Deleting model 'Messages'
-        db.delete_table(u'generics_messages')
-
+        # Changing field 'MessagesStatus.akhnowledge_date'
+        db.alter_column(u'generics_messagesstatus', 'akhnowledge_date', self.gf('django.db.models.fields.DateTimeField')(default=None))
 
     models = {
         u'auth.group': {
@@ -78,7 +62,7 @@ class Migration(SchemaMigration):
         },
         u'generics.messagesstatus': {
             'Meta': {'object_name': 'MessagesStatus'},
-            'akhnowledge_date': ('django.db.models.fields.DateTimeField', [], {}),
+            'akhnowledge_date': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'message': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'status_of_messaged_users'", 'to': u"orm['generics.Messages']"}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'status_of_user_messages'", 'to': u"orm['auth.User']"})
