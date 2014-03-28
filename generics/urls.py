@@ -1,8 +1,8 @@
 from django.conf.urls import patterns, url #include,
 
-import logging
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+# import logging
+# logger = logging.getLogger(__name__)
+# logger.setLevel(logging.INFO)
 
 
 urlpatterns = patterns(

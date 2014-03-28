@@ -90,13 +90,16 @@ class GenericManager(models.Manager):
 
 
 class MessagesStatus(models.Model):
-    message = models.ForeignKey('Messages', related_name="status_of_messaged_users")
-    user = models.ForeignKey(User, related_name="status_of_user_messages")
+    message = models.ForeignKey('Messages', related_name="status_of_user_messages")
+    user = models.ForeignKey(User, related_name="status_of_messaged_users")
     akhnowledge_date = models.DateTimeField(editable=False, null=True, default=None)
 
     def __unicode__(self):
         if self.akhnowledge_date:
             return "%s akhnowledged %s on %s" % (self.user, self.message, self.akhnowledge_date)
+        else:
+            return "%s has not akhnowledged %s yet" % (self.user, self.message)
+
 
 
 
