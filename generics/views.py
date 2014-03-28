@@ -5,8 +5,9 @@ from django.core.exceptions import PermissionDenied
 from django.http import Http404
 from django.http import HttpResponse
 # from django.core.cache import cache
+from django.utils import timezone
 
-from generics.models import Messages
+from generics.models import MessagesStatus
 
 import logging
 logger = logging.getLogger(__name__)
@@ -80,12 +81,11 @@ def messages_api(request):
 
     if message_id and action:
         if action=="remove":
-            try:
-                m = Messages.objects.get(pk=message_id)
-                m.users.remove(request.user)
-                result = "Removed"
-            except Messages.DoesNotExist:
-                raise Http404
+            result = MessagesStatus.objects.filter(message__pk=message_id, user=request.user).update(akhnowledge_date=timezone.now())
+                # m.users.remove(request.user)
+                # result = "Removed"
+            # except MessagesStatus.DoesNotExist:
+            #     raise Http404
 
     return HttpResponse(json.dumps(result), mimetype='application/json')
 
