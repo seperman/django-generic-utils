@@ -94,11 +94,15 @@ class MessagesStatus(models.Model):
     user = models.ForeignKey(User, related_name="status_of_messaged_users")
     akhnowledge_date = models.DateTimeField(editable=False, null=True, default=None)
 
+    class Meta:
+        unique_together = (("message", "user"),)
+
     def __unicode__(self):
         if self.akhnowledge_date:
             return "%s akhnowledged %s on %s" % (self.user, self.message, self.akhnowledge_date)
         else:
             return "%s has not akhnowledged %s yet" % (self.user, self.message)
+
 
 
 
@@ -114,7 +118,7 @@ class Messages(models.Model):
     objects = GenericManager()
 
     msg = models.CharField("Message", max_length=255)
-    msg_code = models.CharField("Message Unique Code", max_length=10, unique=True)
+    msg_code = models.CharField("Message Unique Code", max_length=30, unique=True, db_index=True)
     button_txt = models.CharField("Button Text", max_length=50, default="Ok")
     users = models.ManyToManyField(User, through=MessagesStatus, related_name="messages_of_user",help_text="Users who need to akhnowledge this message")
     
