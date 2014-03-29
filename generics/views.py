@@ -58,7 +58,7 @@ def task_api(request):
 
 
     return HttpResponse(json.dumps(task_stat), mimetype='application/json')
-
+# -*- coding: utf-8 -*-
 
 
 

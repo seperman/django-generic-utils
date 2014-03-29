@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 partly based on Federico Capoano script
 """

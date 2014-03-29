@@ -1,6 +1,4 @@
-# from django.utils.safestring import mark_safe
-
-
+# -*- coding: utf-8 -*-
 
 class MessageAll(object):
     """ Messages all pages"""

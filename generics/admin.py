@@ -1,6 +1,7 @@
+# -*- coding: utf-8 -*-
 from django.contrib import admin
 
-from generics.models import Messages, MessagesStatus
+from generics.models import Messages #, MessagesStatus
 from generics.forms import MessagesForm
 
 
