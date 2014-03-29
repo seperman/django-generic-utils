@@ -6,7 +6,7 @@
         {% for message in user_messages %}
             <li class="user-message-{{ message.id }}">
                 {{ message.msg }}
-                <input type="submit" class="grp-button grp-default user-message-btn-{{ message.id }}" name="_ok" value="Ok, got it."/>
+                <input type="submit" class="grp-button grp-default user-message-btn-{{ message.id }}" name="_ok" value="{{ message.button_txt }}"/>
                 <!-- <input type="submit" class="grp-button grp-default user-message-{{ message.id }}" name="_ok" value="Ok"/> -->
             </li>
         {% endfor %}

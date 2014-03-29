@@ -10,7 +10,7 @@ class MessageAll(object):
         # messaging only users who have logged in. We can't message anonymous users.
         if request.user.is_authenticated():
             criteria = {"status_of_user_messages__akhnowledge_date__isnull":True}
-            msg = request.user.messages_of_user.flat_field_list_filtered(fields=('id', 'msg'), criteria=criteria, output="list_of_dict")
+            msg = request.user.messages_of_user.flat_field_list_filtered(fields=('id', 'msg', 'button_txt',), criteria=criteria, output="list_of_dict")
             if msg:
                 response.context_data['user_messages'] = msg
             #     msg[0] = mark_safe("""%s 

@@ -14,6 +14,6 @@ class MessagesAdmin(admin.ModelAdmin):
 
     # filter_horizontal = ("users",)
 
-    list_display = ("msg", "id",)
+    list_display = ("msg_code", "id", "msg", )
 
 admin.site.register(Messages, MessagesAdmin)
