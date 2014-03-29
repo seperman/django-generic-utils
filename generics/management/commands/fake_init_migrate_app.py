@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from django.core.management.base import BaseCommand, CommandError
 from django.core.management import execute_from_command_line
 from south.models import MigrationHistory

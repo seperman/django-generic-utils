@@ -196,6 +196,7 @@ function progress_class(options){
           progressLabel.text( "finished!" );
           clearInterval(progressbar_updator);
           setTimeout( function(){progressbar.parent().parent().remove();} , 5000 );
+          $('#grp-content').load(window.location.pathname + ' #grp-content > *');   // This will ONLY reload the part of page we need into the same part!!
         }
       });
 
