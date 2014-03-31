@@ -159,3 +159,9 @@ def url_exists(url, timeout=10):
     return result
 
 
+
+def humanize_number(value):
+    """adds commas to numbers"""
+    return "{:,.2f}".format(value)
+
+
