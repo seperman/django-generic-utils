@@ -106,7 +106,7 @@ function progress_class(options){
 
         if (terminate==1){
           clearInterval(progressbar_updator);
-          setTimeout( function(){progressbar.parent().parent().remove();} , 1000 );
+          setTimeout( function(){progressbar.parent().parent().remove();} , 100 );
         }
 
         if (msg !== null) {
@@ -119,20 +119,27 @@ function progress_class(options){
           // checking to see if the state starts with error:
           if (msg.state.lastIndexOf("Err", 0) === 0 ){
             alert(msg.state);
-            waiting = true;
+            // waiting = false;
             terminate = 1;
           }
           waiting = false;
         }
       })
       .fail(function(err) {
-        console.log(the_id + "ERROR!!!");
+        console.log(the_id + "ERROR!!! count" +err_count);
         err_count=++err_count;
 
-        if (err_count > 4){
+        if (err_count > 1){
           alert("Error in retrieving task status for: " + task_name);
+          waiting = false;
+          terminate = 1;
+          clearInterval(progressbar_updator);
+          setTimeout( function(){progressbar.parent().parent().remove();} , 100 );
+        } 
+        else if (err_count === 1){
           waiting = true;
-        } else {
+        }
+        else {
           waiting = false;
         }
       })
@@ -151,6 +158,8 @@ function progress_class(options){
       if (waiting_cycle_major > waiting_for_cycles_major){
         alert(task_name + ":TIMEOUT! Please try again later.");
         terminate = 1;
+        clearInterval(progressbar_updator);
+        setTimeout( function(){progressbar.parent().parent().remove();} , 100 );
       }
     }
   }

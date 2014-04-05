@@ -41,7 +41,8 @@ def task_api(request):
     if task_id:
         # job = AsyncResult(task_id)
         # job.result.state
-        task_stat = cache.get("celery-stat-%s" % task_id)
+        task_key = "celery-stat-%s" % task_id
+        task_stat = cache.get(task_key)
         try:
             if task_stat['user_id'] != request.user.id:
                 task_stat = None
@@ -53,6 +54,7 @@ def task_api(request):
     if task_stat and terminate=="1":
         logger.info("terminate: %s" % terminate)
         revoke(task_id, terminate=True)
+        cache.delete(task_key)
 
 
 
