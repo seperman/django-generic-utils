@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
+# from __future__ import print_function, division
+import urllib2 as urllib
+import io
+
 
 """
 Some generic functions
@@ -160,8 +164,24 @@ def url_exists(url, timeout=10):
 
 
 
+def wget(the_url):
+    try:
+        fd = urllib.urlopen(the_url)
+        return io.BytesIO(fd.read())
+    except urllib.HTTPError:
+        raise Exception("%s can't be accessed" % the_url)
+    return False
+
+
+
+
 def humanize_number(value):
     """adds commas to numbers"""
     return "{:,.2f}".format(value)
 
 
+
+
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()
