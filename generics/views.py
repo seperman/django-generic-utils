@@ -2,7 +2,7 @@ from django.core.cache import cache
 import json
 # from celery.result import AsyncResult
 from django.core.exceptions import PermissionDenied
-from django.http import Http404
+# from django.http import Http404
 from django.http import HttpResponse
 # from django.core.cache import cache
 from django.utils import timezone
@@ -16,8 +16,8 @@ logger.setLevel(logging.INFO)
 #Trying to load celery
 try:
     from celery.task.control import revoke
-except:
-    logger.info("celery was not found. Loading a mock version", exc_info=True)
+except ImportError:
+    logger.info("celery was not found. Loading a mock version for Django Generics")
     def revoke(*args, **kwargs):
         return None
 
