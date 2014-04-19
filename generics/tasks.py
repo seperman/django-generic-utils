@@ -56,9 +56,9 @@ class celery_progressbar_stat(object):
             target_product_fields = model.ebay_fields[target_product]
             err_field = target_product_fields["err"]
             setattr(obj, err_field, True)
-            obj.save(update_fields=[err_field])
+            obj.save(update_fields=[err_field,])
 
         logger.error(msg, exc_info=True)
-        
+
     percent = property(get_percent, set_percent,) 
     state = property(get_state, set_state,) 
