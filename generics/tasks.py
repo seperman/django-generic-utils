@@ -42,7 +42,7 @@ class celery_progressbar_stat(object):
     def set_cache(self):
         cache.set(self.task_stat_id, self.result, self.cache_time)
 
-    def raise_err(self, msg, obj=None, target_product=None, check_if_raised_before=True):
+    def raise_err(self, msg, obj=None, field=None, check_if_raised_before=True):
         # We check to see if an error is not already caught. Since we don't want to re-raise the same error up.
         # However you have to raise the error yourself in your code
         if check_if_raised_before and not self.no_error_caught:
@@ -51,12 +51,16 @@ class celery_progressbar_stat(object):
         self.no_error_caught = False
         self.state = msg
 
-        if obj and target_product:
-            model = type(obj)
-            target_product_fields = model.ebay_fields[target_product]
-            err_field = target_product_fields["err"]
-            setattr(obj, err_field, True)
-            obj.save(update_fields=[err_field,])
+        if obj and field:
+            current_err_fields = getattr(obj, "err_fields")
+            field += " "
+            
+            if field not in current_err_fields:
+                current_err_fields = "%s %s" % (field, current_err_fields)
+
+                setattr(obj, "err_fields", current_err_fields)
+                
+                obj.save(update_fields=["err_fields",])
 
         logger.error(msg, exc_info=True)
 
