@@ -59,10 +59,33 @@ class celery_progressbar_stat(object):
                 current_err_fields = "%s %s" % (field, current_err_fields)
 
                 setattr(obj, "err_fields", current_err_fields)
+                setattr(obj, "has_err", True)
+                setattr(obj, "err_msg", msg)
                 
-                obj.save(update_fields=["err_fields",])
+                obj.save(update_fields=["err_fields", "has_err", "err_msg", ])
 
         logger.error(msg, exc_info=True)
+
+
+    def clean_err(self, obj, field):
+        """
+        Cleans the error fields on the object
+        """
+        current_err_fields = getattr(obj, "err_fields")
+        field += " "
+        current_err_fields = current_err_fields.replace(field, "")
+
+        setattr(obj, "err_fields", current_err_fields)
+        setattr(obj, "err_msg", "")
+        # It will only remove the has_err flag if there is no error field left
+        if not current_err_fields:
+            setattr(obj, "has_err", False)
+        
+        obj.save(update_fields=["err_fields", "has_err", "err_msg", ])
+
+
+
+
 
     percent = property(get_percent, set_percent,) 
     state = property(get_state, set_state,) 
