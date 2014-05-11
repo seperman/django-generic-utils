@@ -59,12 +59,15 @@ class celery_progressbar_stat(object):
                 current_err_fields = "%s %s" % (field, current_err_fields)
 
                 setattr(obj, "err_fields", current_err_fields)
-                setattr(obj, "has_err", True)
+                setattr(obj, "is_fine", False)
                 setattr(obj, "err_msg", msg)
                 
-                obj.save(update_fields=["err_fields", "has_err", "err_msg", ])
+                obj.save(update_fields=["err_fields", "is_fine", "err_msg", ])
 
-        logger.error(msg, exc_info=True)
+        if msg.startswith("Err"):
+            logger.error(msg, exc_info=True)
+        else:
+            logger.warning(msg, exc_info=True)
 
 
     def clean_err(self, obj, field):
@@ -77,11 +80,11 @@ class celery_progressbar_stat(object):
 
         setattr(obj, "err_fields", current_err_fields)
         setattr(obj, "err_msg", "")
-        # It will only remove the has_err flag if there is no error field left
+        # It will only remove the is_fine flag if there is no error field left
         if not current_err_fields:
-            setattr(obj, "has_err", False)
+            setattr(obj, "is_fine", True)
         
-        obj.save(update_fields=["err_fields", "has_err", "err_msg", ])
+        obj.save(update_fields=["err_fields", "is_fine", "err_msg", ])
 
 
 
