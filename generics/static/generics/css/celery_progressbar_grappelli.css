@@ -1,7 +1,7 @@
 .ui-progressbar {
   position: relative;
-  height:15px;
-  width:220px;
+  height:18px;
+  width:320px;
 }
 
 .ui-widget {
@@ -14,7 +14,7 @@
 
 .progress-label {
   position: absolute;
-  font-size: 8px;
+  font-size: 10px;
   left: 20%;
   font-weight: normal;
   text-shadow: 1px 1px 0 #fff;
