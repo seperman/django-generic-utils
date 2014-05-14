@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import print_function, absolute_import, division
 from django.core.cache import cache
 
 import logging
@@ -69,6 +70,7 @@ class celery_progressbar_stat(object):
         else:
             logger.warning(msg, exc_info=True)
 
+        print(msg)
 
     def clean_err(self, obj, field):
         """
@@ -83,6 +85,7 @@ class celery_progressbar_stat(object):
         # It will only remove the is_fine flag if there is no error field left
         if not current_err_fields:
             setattr(obj, "is_fine", True)
+
         
         obj.save(update_fields=["err_fields", "is_fine", "err_msg", ])
 

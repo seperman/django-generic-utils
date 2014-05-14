@@ -3,24 +3,46 @@ Written by Erasmose 2014
 www.ZepWorks.com
 MIT Licence
 */
-function getCookie(name) {
-    var cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        var cookies = document.cookie.split(';');
-        for (var i = 0; i < cookies.length; i++) {
-            var cookie = jQuery.trim(cookies[i]);
-            // Does this cookie string begin with the name we want?
-            if (cookie.substring(0, name.length + 1) == (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
+
+
+(function(){
+    var cookies;
+
+    function readCookie(name,c,C,i){
+        if(cookies){ return cookies[name]; }
+
+        c = document.cookie.split('; ');
+        cookies = {};
+
+        for(i=c.length-1; i>=0; i--){
+           C = c[i].split('=');
+           cookies[C[0]] = C[1];
         }
+
+        return cookies[name];
     }
-    return cookieValue;
-}
 
+    window.readCookie = readCookie; // or expose it however you want
+})();
 
-var csrftoken = getCookie('csrftoken');
+// The above function is faster
+// function getCookie(name) {
+//     var cookieValue = null;
+//     if (document.cookie && document.cookie !== '') {
+//         var cookies = document.cookie.split(';');
+//         for (var i = 0; i < cookies.length; i++) {
+//             var cookie = jQuery.trim(cookies[i]);
+//             // Does this cookie string begin with the name we want?
+//             if (cookie.substring(0, name.length + 1) == (name + '=')) {
+//                 cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+//                 break;
+//             }
+//         }
+//     }
+//     return cookieValue;
+// }
+
+var csrftoken = readCookie('csrftoken');
 
 
 var csrfSafeMethod = function(method) {
@@ -135,14 +157,14 @@ function progress_class(options){
           terminate = 1;
           clearInterval(progressbar_updator);
           setTimeout( function(){progressbar.parent().parent().remove();} , 100 );
-        } 
+        }
         else if (err_count === 1){
           waiting = true;
         }
         else {
           waiting = false;
         }
-      })
+      });
       
       //waiting is True
     } else {
@@ -162,7 +184,7 @@ function progress_class(options){
         setTimeout( function(){progressbar.parent().parent().remove();} , 100 );
       }
     }
-  }
+  };
 
 
 
@@ -186,7 +208,7 @@ function progress_class(options){
         } else {
           dialog_delete_task_simple();
         }
-      } 
+      }
     ).button({ icons: { primary: "ui-icon-circle-close" }, text: false });
 
 
@@ -215,7 +237,7 @@ function progress_class(options){
     });
 
     progressbar_updator = setInterval(function() { get_task_status(); }, sec);
-  }
+  };
 
   var dialog_delete_task = function(){
     $(function() {
@@ -224,7 +246,7 @@ function progress_class(options){
       task_delete_dialog.dialog({
         dialogClass: 'no-close delete-task-dialog',
         resizable: false,
-        height:180, 
+        height: 180,
         modal: true,
         buttons: {
           "Delete": function() {
@@ -237,7 +259,7 @@ function progress_class(options){
         }
       });
     });
-  }
+  };
   var dialog_delete_task_simple = function()
     {
       var r=confirm("Are you sure?");
