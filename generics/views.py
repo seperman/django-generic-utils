@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from django.core.cache import cache
 import json
 # from celery.result import AsyncResult
@@ -17,7 +18,6 @@ logger.setLevel(logging.INFO)
 try:
     from celery.task.control import revoke
 except ImportError:
-    logger.info("celery was not found. Loading a mock version for Django Generics")
     def revoke(*args, **kwargs):
         return None
 
@@ -52,15 +52,11 @@ def task_api(request):
         task_stat = None
 
     if task_stat and terminate=="1":
-        logger.info("terminate: %s" % terminate)
         revoke(task_id, terminate=True)
         cache.delete(task_key)
 
 
-
-
     return HttpResponse(json.dumps(task_stat), mimetype='application/json')
-# -*- coding: utf-8 -*-
 
 
 

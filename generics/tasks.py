@@ -16,15 +16,16 @@ class celery_progressbar_stat(object):
         c = celery_progressbar_stat(current_task, user_id)
         c.percent=10
 
-        c.state="FINISHED"
+        c.msg="FINISHED"
 
-        This will automatically update the progressbar state
+        This will automatically update the progressbar msg
     """
     def __init__(self, task, user_id, cache_time=200):
         self.task_stat_id = "celery-stat-%s" % task.request.id
         self.cache_time = cache_time
-        self.result={'state':"IN PROGRESS", 'progress_percent': 0, 'user_id':user_id}
-        self.no_error_caught = True
+        self.result={'msg':"IN PROGRESS", 'progress_percent': 0, 'is_killed':False, 'user_id':user_id}
+        # self.no_error_caught = True
+        self.errors_list = []
 
     def get_percent(self):
         return self.result["progress_percent"]
@@ -33,24 +34,38 @@ class celery_progressbar_stat(object):
         self.result["progress_percent"] = val
         self.set_cache()
 
-    def get_state(self):
-        return self.result["state"]
+    def get_msg(self):
+        return self.result["msg"]
 
-    def set_state(self, val):
-        self.result["state"] = val
+    def set_msg(self, val):
+        self.result["msg"] = val
         self.set_cache()
+
+    def get_is_killed(self):
+        return self.result["is_killed"]
+
+    def set_is_killed(self, val):
+        self.result["is_killed"] = val
+        self.set_cache()
+
 
     def set_cache(self):
         cache.set(self.task_stat_id, self.result, self.cache_time)
 
-    def raise_err(self, msg, obj=None, field=None, check_if_raised_before=True):
+    def raise_err(self, msg, e=None, obj=None, field=None, fatal=False):
+        # msg is what the user sees. e is the actual error that was raised.
         # We check to see if an error is not already caught. Since we don't want to re-raise the same error up.
-        # However you have to raise the error yourself in your code
-        if check_if_raised_before and not self.no_error_caught:
-            return "Raised before"
+        # However you have to raise the error yourself in your code. e is basically Exception as e
+        
+        if fatal:
+            self.is_killed = True
 
-        self.no_error_caught = False
-        self.state = msg
+        if self.errors_list and e == self.errors_list[-1]:
+            return "The error was just raised"
+        else:
+            self.errors_list.append(e)
+
+        self.msg = msg
 
         if obj and field:
             current_err_fields = getattr(obj, "err_fields")
@@ -59,20 +74,24 @@ class celery_progressbar_stat(object):
             if field not in current_err_fields:
                 current_err_fields = "%s %s" % (field, current_err_fields)
 
-                setattr(obj, "err_fields", current_err_fields)
-                setattr(obj, "is_fine", False)
-                setattr(obj, "err_msg", msg)
-                
-                obj.save(update_fields=["err_fields", "is_fine", "err_msg", ])
+                try:
+                    setattr(obj, "err_fields", current_err_fields)
+                    setattr(obj, "is_fine", False)
+                    setattr(obj, "err_msg", msg)
+                    
+                    obj.save(update_fields=["err_fields", "is_fine", "err_msg", ])
+                except:
+                    self.msg = "Unable to set object's error fields. The model is not properly set up."
 
         if msg.startswith("Err"):
-            logger.error(msg, exc_info=True)
+            logger.error("msg: %s, e: %s" % (msg, e) , exc_info=True)
         else:
-            logger.warning(msg, exc_info=True)
+            logger.warning("msg: %s, e: %s" % (msg, e) , exc_info=True)
 
         print(msg)
 
-    def clean_err(self, obj, field):
+
+    def clean_err(self, obj, field, save=True):
         """
         Cleans the error fields on the object
         """
@@ -80,18 +99,28 @@ class celery_progressbar_stat(object):
         field += " "
         current_err_fields = current_err_fields.replace(field, "")
 
-        setattr(obj, "err_fields", current_err_fields)
-        setattr(obj, "err_msg", "")
-        # It will only remove the is_fine flag if there is no error field left
-        if not current_err_fields:
-            setattr(obj, "is_fine", True)
+        try:
+            setattr(obj, "err_fields", current_err_fields)
+            setattr(obj, "err_msg", "")
+            # It will only remove the is_fine flag if there is no error field left
+            if not current_err_fields:
+                setattr(obj, "is_fine", True)
 
-        
-        obj.save(update_fields=["err_fields", "is_fine", "err_msg", ])
+            if save:
+                obj.save(update_fields=["err_fields", "is_fine", "err_msg", ])
+                msg = "obj err fields cleanup and saving obj %s" % obj.pk
+                logger.info(msg)
+                print(msg)
+            else:
+                msg = "obj err fields cleanup but NOT saving obj %s" % obj.pk
+                logger.info(msg)
+                print(msg)
 
-
-
-
+        except:
+            self.msg = "Unable to set object's error fields. The model is not properly set up."
+            logger.error(self.msg)
+            print(self.msg)
 
     percent = property(get_percent, set_percent,) 
-    state = property(get_state, set_state,) 
+    msg = property(get_msg, set_msg,)
+    is_killed = property(get_is_killed, set_is_killed,)

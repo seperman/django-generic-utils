@@ -84,6 +84,7 @@ function progress_class(options){
   var progressbar_updator;
   var terminate = 0;
   var jquery_dialog = options.jquery_dialog || "true";
+  var previous_msg = "IN PROGRESS";
 
 
 
@@ -124,24 +125,26 @@ function progress_class(options){
       cache: false,
       data: {id: the_id, terminate: terminate}
       } )
-      .done(function(msg, s) {
+      .done(function(celery_respone, s) {
 
-        if (terminate==1){
+        if (terminate === 1){
           clearInterval(progressbar_updator);
           setTimeout( function(){progressbar.parent().parent().remove();} , 100 );
         }
 
-        if (msg !== null) {
-          // console.log(the_id + " :: " + msg.progress_percent + " " + s)
-          if (msg.state !== null && msg.state !=="") {
-            task_name = msg.state.slice(0,32);
+        if (celery_respone !== null) {
+          // console.log(the_id + " :: " + celery_respone.progress_percent + " " + s)
+          if (celery_respone.msg !== null && celery_respone.msg !=="") {
+            task_name = celery_respone.msg.slice(0,32);
           }
-          progress(msg.progress_percent);
+          progress(celery_respone.progress_percent);
 
-          // checking to see if the state starts with error:
-          if (msg.state.lastIndexOf("Err", 0) === 0 ){
-            alert(msg.state);
-            // waiting = false;
+          // checking to see if the msg starts with error:
+          if (celery_respone.msg.lastIndexOf("Err", 0) === 0 && celery_respone.msg !== previous_msg){
+            alert(celery_respone.msg);
+            previous_msg = celery_respone.msg;
+          }
+          if (celery_respone.is_killed === true){
             terminate = 1;
           }
           waiting = false;
