@@ -61,7 +61,10 @@ class celery_progressbar_stat(object):
             self.is_killed = True
 
         if self.errors_list and e == self.errors_list[-1]:
-            return "The error was just raised"
+            msg= "The error was just raised"
+            print(msg)
+            logger.info(msg)
+            return msg
         else:
             self.errors_list.append(e)
 
