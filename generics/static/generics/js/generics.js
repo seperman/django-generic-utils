@@ -144,7 +144,7 @@ function progress_class(options){
             alert(celery_respone.msg);
             previous_msg = celery_respone.msg;
           }
-          if (celery_respone.is_killed === true){
+          if (celery_respone.is_killed === true || celery_respone.progress_percent == 100 ){
             terminate = 1;
           }
           waiting = false;
