@@ -96,8 +96,12 @@ class celery_progressbar_stat(object):
         Cleans the error fields on the object
         """
         current_err_fields = getattr(obj, "err_fields")
-        field += " "
-        current_err_fields = current_err_fields.replace(field, "")
+
+        if field == "all":
+            current_err_fields = ""
+        else:
+            field += " "
+            current_err_fields = current_err_fields.replace(field, "")
 
         try:
             setattr(obj, "err_fields", current_err_fields)
