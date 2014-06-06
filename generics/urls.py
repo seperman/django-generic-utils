@@ -9,6 +9,7 @@ from django.conf.urls import patterns, url #include,
 urlpatterns = patterns(
     '',
     url(r'^task_api$', 'generics.views.task_api', name="task_api"),
+    url(r'^celery_test$', 'generics.views.celery_test', name="celery_test"),
     url(r'^messages_api$', 'generics.views.messages_api', name="messages_api"),
     )
 

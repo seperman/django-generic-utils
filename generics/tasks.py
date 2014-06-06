@@ -2,6 +2,9 @@
 from __future__ import print_function, absolute_import, division
 from django.core.cache import cache
 
+from celery import shared_task, current_task
+
+
 import logging
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -131,3 +134,16 @@ class celery_progressbar_stat(object):
     percent = property(get_percent, set_percent,) 
     msg = property(get_msg, set_msg,)
     is_killed = property(get_is_killed, set_is_killed,)
+
+
+
+
+@shared_task
+def test_progressbar(user_id=1):
+    from time import sleep
+    c_stat = celery_progressbar_stat(current_task, user_id)
+    c_stat.msg = "Tesing"
+
+    for i in range(0,100):
+        sleep(5)
+        c_stat.percent = i

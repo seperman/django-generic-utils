@@ -108,9 +108,6 @@ class MessagesStatus(models.Model):
 
 
 
-
-
-
 class Messages(models.Model):
     """
     Messages for users
@@ -125,6 +122,5 @@ class Messages(models.Model):
     
     def __unicode__(self):
         return self.msg[:40]
-
 
 

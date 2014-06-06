@@ -8,7 +8,13 @@ from django.http import HttpResponse
 # from django.core.cache import cache
 from django.utils import timezone
 
+from generics import tasks
+
+
 from generics.models import MessagesStatus
+
+
+
 
 import logging
 logger = logging.getLogger(__name__)
@@ -87,3 +93,21 @@ def messages_api(request):
 
     return HttpResponse(json.dumps(result), mimetype='application/json')
 
+
+
+
+
+def celery_test(request):
+    """ Tests celery and celery progress bar """
+
+    if not request.user.is_authenticated() or not request.user.is_staff:
+        raise PermissionDenied
+
+    # you need to alwasy specify user_id with kwargs and NOT args
+    job = tasks.test_progressbar.delay(user_id=request.user.id)
+    # request.session['task_id'] = job.id
+    data = job.id
+  
+    json_data = json.dumps(data)
+
+    return HttpResponse(json_data, mimetype='application/json')
