@@ -68,7 +68,7 @@ $.ajaxSetup({
 
 function progress_class(options){
 
-  var task_url = options.task_url;
+  var task_url = options.task_url || null;
   var task_name = options.task_name || "task";
   var sec = options.sec*1000 || 5000;
   var waiting = false;
@@ -77,7 +77,7 @@ function progress_class(options){
   var waiting_cycle = 0;
   var waiting_cycle_major = 0;
   var err_count = 0;
-  var the_id;
+  var the_id = options.the_id || null;
   var the_container;
   var progressbar;
   var progressLabel;
@@ -88,7 +88,7 @@ function progress_class(options){
 
 
 
-  var run_task = function(task_url) {
+  var run_task = function() {
     $.ajax( {
     url: task_url,
     type: "POST",
@@ -109,7 +109,14 @@ function progress_class(options){
       alert( "error running the task: " + err );
     });
   };
-  
+
+
+  var show_progressbar_again = function() {
+    the_container = "#container-" + the_id;
+    make_progress_bar();
+  };
+
+
 
   var get_task_status = function() {
     function progress(msg) {
@@ -272,5 +279,9 @@ function progress_class(options){
         }
     }
 
-  run_task(task_url);
+  if (task_url !== null){
+    run_task();
+  } else if (the_id !== null) {
+    show_progressbar_again();
+  }
 }
