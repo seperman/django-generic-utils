@@ -2,6 +2,7 @@
   position: relative;
   height:18px;
   width:320px;
+  margin-bottom: 10px;
 }
 
 .ui-widget {
@@ -23,6 +24,7 @@
 .cancel-task{
   font-size: 10px;
   margin-left: 3px;
-  vertical-align: text-bottom;'
+  vertical-align: text-bottom;
+  margin-bottom: 10px;
   }
 
