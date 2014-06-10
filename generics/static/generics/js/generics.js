@@ -85,6 +85,7 @@ function progress_class(options){
   var terminate = 0;
   var jquery_dialog = options.jquery_dialog || "true";
   var previous_msg = "IN PROGRESS";
+  var previous_sticky_msg = "";
 
 
 
@@ -117,6 +118,11 @@ function progress_class(options){
   };
 
 
+  var terminate_progressbar = function() {
+    clearInterval(progressbar_updator);
+    setTimeout( function(){progressbar.parent().parent().remove();} , 100 );
+  };
+
 
   var get_task_status = function() {
     function progress(msg) {
@@ -134,11 +140,6 @@ function progress_class(options){
       } )
       .done(function(celery_respone, s) {
 
-        if (terminate === 1){
-          clearInterval(progressbar_updator);
-          setTimeout( function(){progressbar.parent().parent().remove();} , 100 );
-        }
-
         if (celery_respone !== null) {
           // console.log(the_id + " :: " + celery_respone.progress_percent + " " + s)
           if (celery_respone.msg !== null && celery_respone.msg !=="") {
@@ -148,11 +149,21 @@ function progress_class(options){
 
           // checking to see if the msg starts with error:
           if (celery_respone.msg.lastIndexOf("Err", 0) === 0 && celery_respone.msg !== previous_msg){
-            alert(celery_respone.msg);
             previous_msg = celery_respone.msg;
+            if (!$("tasks_err_log").length){
+              $("#footerprogressbar-grp").prepend('<div id="tasks_err_log" style="width: 93%; height: 300px; overflow-y: scroll; color: rgb(222, 222, 222);">');
+            }
+            $("#tasks_err_log").append("<p>"+celery_respone.msg+"</p>");
+          }
+          if (celery_respone.sticky_msg && celery_respone.sticky_msg !== previous_sticky_msg ){
+            previous_sticky_msg = celery_respone.sticky_msg;
+            if (!$("tasks_sticky_msg").length){
+              $("#footerprogressbar-grp").prepend('<div id="tasks_sticky_msg" style="width: 93%; height: 300px; overflow-y: scroll; color: rgb(255, 222, 222);">');
+            }
+            $("#tasks_sticky_msg").html(celery_respone.sticky_msg);
           }
           if (celery_respone.is_killed === true || celery_respone.progress_percent == 100 ){
-            terminate = 1;
+            terminate_progressbar();
           }
           waiting = false;
         }
@@ -164,9 +175,7 @@ function progress_class(options){
         if (err_count > 1){
           alert("Error in retrieving task status for: " + task_name);
           waiting = false;
-          terminate = 1;
-          clearInterval(progressbar_updator);
-          setTimeout( function(){progressbar.parent().parent().remove();} , 100 );
+          terminate_progressbar();
         }
         else if (err_count === 1){
           waiting = true;
@@ -188,10 +197,8 @@ function progress_class(options){
         waiting = false;
       }
       if (waiting_cycle_major > waiting_for_cycles_major){
-        alert(task_name + ":TIMEOUT! Please try again later.");
-        terminate = 1;
-        clearInterval(progressbar_updator);
-        setTimeout( function(){progressbar.parent().parent().remove();} , 100 );
+        terminate_progressbar();
+        alert(task_name + ":TIMEOUT! Please refresh the page later.");
       }
     }
   };
@@ -277,7 +284,7 @@ function progress_class(options){
         {
           terminate = 1;
         }
-    }
+    };
 
   if (task_url !== null){
     run_task();

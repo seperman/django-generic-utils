@@ -59,7 +59,9 @@ def task_api(request):
 
     if task_stat and terminate=="1":
         revoke(task_id, terminate=True)
-        cache.delete(task_key)
+        task_stat["is_killed"] = True
+        task_stat["msg"] = "Terminated by user"
+        cache.set(task_id, task_stat, 2)
 
 
     return HttpResponse(json.dumps(task_stat), mimetype='application/json')
