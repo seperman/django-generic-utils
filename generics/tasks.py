@@ -29,7 +29,7 @@ class celery_progressbar_stat(object):
     def __init__(self, task, user_id, cache_time=200):
         self.task_stat_id = "celery-stat-%s" % task.request.id
         self.cache_time = cache_time
-        self.result={'msg':"IN PROGRESS", 'progress_percent': 0, 'is_killed':False, 'user_id':user_id}
+        self.result={'msg':"IN PROGRESS", 'sticky_msg':'', 'err':'', 'progress_percent': 0, 'is_killed':False, 'user_id':user_id}
         # self.no_error_caught = True
         self.last_err = ""
 
@@ -45,6 +45,13 @@ class celery_progressbar_stat(object):
 
     def set_msg(self, val):
         self.result["msg"] = val
+        self.set_cache()
+
+    def get_err(self):
+        return self.result["err"]
+
+    def set_err(self, val):
+        self.result["err"] = val
         self.set_cache()
 
     def get_sticky_msg(self):
@@ -104,10 +111,14 @@ class celery_progressbar_stat(object):
                 except:
                     self.msg = "Unable to set object's error fields. The model is not properly set up."
 
-        if msg.startswith("Err"):
+        if msg[:3].lower() == "err":
             logger.error("msg: %s, e: %s" % (msg, e) )
-        else:
+            self.err = msg
+        elif msg[:4].lower() == "warn":
             logger.warning("msg: %s, e: %s" % (msg, e) )
+            self.err = msg
+        else:
+            logger.info("msg: %s, e: %s" % (msg, e) )
 
         print(msg)
 
@@ -148,6 +159,7 @@ class celery_progressbar_stat(object):
 
     percent = property(get_percent, set_percent,) 
     msg = property(get_msg, set_msg,)
+    err = property(get_err, set_err,)
     sticky_msg = property(get_sticky_msg, set_sticky_msg,)
     is_killed = property(get_is_killed, set_is_killed,)
 
@@ -164,5 +176,5 @@ def test_progressbar(user_id=1):
         sleep(.3)
         if i==6:
             from django.utils.safestring import mark_safe
-            c_stat.raise_err("Sample Error", e="test_err", sticky_msg=mark_safe("<p>TEST ERROR</p>"))
+            c_stat.raise_err("Error: This error should show up", e="test_err", sticky_msg=mark_safe("<p>TEST STICKY ERROR.</p><img src='https://cdn0.iconfinder.com/data/icons/cosmo-medicine/40/test-tube_2-128.png'>"))
         c_stat.percent = i

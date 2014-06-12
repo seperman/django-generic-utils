@@ -84,7 +84,7 @@ function progress_class(options){
   var progressbar_updator;
   var terminate = 0;
   var jquery_dialog = options.jquery_dialog || "true";
-  var previous_msg = "IN PROGRESS";
+  var previous_err = "";
   var previous_sticky_msg = "";
 
 
@@ -148,17 +148,17 @@ function progress_class(options){
           progress(celery_respone.progress_percent);
 
           // checking to see if the msg starts with error:
-          if (celery_respone.msg.lastIndexOf("Err", 0) === 0 && celery_respone.msg !== previous_msg){
-            previous_msg = celery_respone.msg;
-            if (!$("tasks_err_log").length){
-              $("#footerprogressbar-grp").prepend('<div id="tasks_err_log" style="width: 93%; height: 300px; overflow-y: scroll; color: rgb(222, 222, 222);">');
+          if (celery_respone.err && celery_respone.err !== previous_err){
+            previous_err = celery_respone.err;
+            if ($("#tasks_err_log").length == 0){
+              $("#footerprogressbar-grp").prepend('<div id="tasks_err_log">');
             }
-            $("#tasks_err_log").append("<p>"+celery_respone.msg+"</p>");
+            $("#tasks_err_log").append("<p>"+celery_respone.err+"</p><hr class='line-seperator'>");
           }
           if (celery_respone.sticky_msg && celery_respone.sticky_msg !== previous_sticky_msg ){
             previous_sticky_msg = celery_respone.sticky_msg;
-            if (!$("tasks_sticky_msg").length){
-              $("#footerprogressbar-grp").prepend('<div id="tasks_sticky_msg" style="width: 93%; height: 300px; overflow-y: scroll; color: rgb(255, 222, 222);">');
+            if ($("#tasks_sticky_msg").length == 0){
+              $("#footerprogressbar-grp").prepend('<div id="tasks_sticky_msg">');
             }
             $("#tasks_sticky_msg").html(celery_respone.sticky_msg);
           }
