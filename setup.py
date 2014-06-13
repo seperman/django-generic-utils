@@ -12,7 +12,7 @@ except:
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(name='django-generic-utils',
-      version='0.2.7',
+      version='0.2.8',
       description='Generic Useful Django Classes/Functions',
       url='https://github.com/erasmose/django-generic-utils',
       download_url='https://github.com/erasmose/django-generic-utils/tarball/master',

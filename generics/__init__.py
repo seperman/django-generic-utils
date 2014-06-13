@@ -5,3 +5,4 @@ from .models import *
 from .tasks import *
 from .views import *
 from .management.commands import *
+from .migrations import *
