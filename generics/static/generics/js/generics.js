@@ -153,7 +153,7 @@ function progress_class(options){
             if ($("#tasks_err_log").length == 0){
               $("#footerprogressbar-grp").prepend('<div id="tasks_err_log">');
             }
-            $("#tasks_err_log").append("<p>"+celery_respone.err+"</p><hr class='line-seperator'>");
+            $("#tasks_err_log").append("<hr class='line-seperator'><p>"+celery_respone.err+"</p>");
           }
           if (celery_respone.sticky_msg && celery_respone.sticky_msg !== previous_sticky_msg ){
             previous_sticky_msg = celery_respone.sticky_msg;
