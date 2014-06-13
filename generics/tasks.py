@@ -1,11 +1,16 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function, absolute_import, division
 from django.core.cache import cache
+from django.conf import settings
 
 from celery import shared_task, current_task
 
 from celery.task.control import revoke
 
+try:
+    err_msg_length = settings.GENERICS_ERR_MSG_LENGTH
+except AttributeError:
+    err_msg_length = None
 
 
 import logging
@@ -32,6 +37,7 @@ class celery_progressbar_stat(object):
         self.result={'msg':"IN PROGRESS", 'sticky_msg':'', 'err':'', 'progress_percent': 0, 'is_killed':False, 'user_id':user_id}
         # self.no_error_caught = True
         self.last_err = ""
+
 
     def get_percent(self):
         return self.result["progress_percent"]
@@ -76,6 +82,7 @@ class celery_progressbar_stat(object):
         # msg is what the user sees. e is the actual error that was raised.
         # We check to see if an error is not already caught. Since we don't want to re-raise the same error up.
         # However you have to raise the error yourself in your code. e is basically Exception as e
+
         if sticky_msg:
             self.sticky_msg = sticky_msg
         elif fatal:
@@ -105,20 +112,23 @@ class celery_progressbar_stat(object):
                 try:
                     setattr(obj, "err_fields", current_err_fields)
                     setattr(obj, "is_fine", False)
-                    setattr(obj, "err_msg", msg)
+                    if err_msg_length:
+                        setattr(obj, "err_msg", msg[:err_msg_length])
+                    else:
+                        setattr(obj, "err_msg", msg)
                     
                     obj.save(update_fields=["err_fields", "is_fine", "err_msg", ])
                 except:
                     self.msg = "Unable to set object's error fields. The model is not properly set up."
 
         if msg[:3].lower() == "err":
-            logger.error("msg: %s, e: %s" % (msg, e) )
+            logger.error("generics_raiseerr msg: %s, e: %s" % (msg, e) )
             self.err = msg
         elif msg[:4].lower() == "warn":
-            logger.warning("msg: %s, e: %s" % (msg, e) )
+            logger.warning("generics_raiseerr msg: %s, e: %s" % (msg, e) )
             self.err = msg
         else:
-            logger.info("msg: %s, e: %s" % (msg, e) )
+            logger.info("generics_raiseerr msg: %s, e: %s" % (msg, e) )
 
         print(msg)
 
