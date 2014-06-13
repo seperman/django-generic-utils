@@ -1,4 +1,6 @@
 include LICENSE
 include README.md
 recursive-include generics/static *
+recursive-include generics/templates *
+recursive-include generics/management *
 recursive-include docs *
