@@ -2,10 +2,13 @@
 from __future__ import print_function, absolute_import, division
 from django.core.cache import cache
 from django.conf import settings
+from django.utils import timezone
+from time import sleep
 
 from celery import shared_task, current_task
 
-from celery.task.control import revoke
+# from celery.task.control import revoke
+from generics.models import CeleryTasks
 
 try:
     err_msg_length = settings.GENERICS_ERR_MSG_LENGTH
@@ -32,12 +35,47 @@ class celery_progressbar_stat(object):
         This will automatically update the progressbar msg
     """
     def __init__(self, task, user_id, cache_time=200):
-        self.task_stat_id = "celery-stat-%s" % task.request.id
+        self.task_id = task.request.id
+        self.task_stat_id = "celery-stat-%s" % self.task_id
         self.cache_time = cache_time
         self.result={'msg':"IN PROGRESS", 'sticky_msg':'', 'err':'', 'progress_percent': 0, 'is_killed':False, 'user_id':user_id}
-        # self.no_error_caught = True
         self.last_err = ""
 
+        # Normally we want to have created the CeleryTasks object before even the task is run. Reason: if the task is in the queue, we want to know that.
+        # In that case these lines are not even run yet! However, we need some delay here before the task is created and the CeleryTasks object created
+        # so we can get the object. Otherwise it can't "get" the object and it thinks it doesn't exist
+        for j in range(1,10):
+            sleep(.3)
+            try:
+                self.celery_task_history_obj = CeleryTasks.objects.get(task_id = self.task_id)
+                break
+            except CeleryTasks.DoesNotExist:
+                pass
+
+        if j >= 9:
+            raise Exception("Could not get the celery_task_history_obj")
+
+        self.celery_task_history_obj.status="active"
+        self.celery_task_history_obj.start_date=timezone.now()
+        self.celery_task_history_obj.save(update_fields=["status", "start_date"])
+
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exit_type, exit_value, traceback):
+
+        logger.info("!!!%s  ----  %s" % (exit_type,exit_value) )
+        if exit_type == SystemExit:
+            self.celery_task_history_obj.status="killed"
+        elif exit_type:
+            self.celery_task_history_obj.status="error"
+            self.is_killed = True  #killed by error but we still set is_killed to true
+        else:
+            self.celery_task_history_obj.status="finished"
+        
+        self.celery_task_history_obj.end_date=timezone.now()
+        self.celery_task_history_obj.save(update_fields=["status", "end_date"])
 
     def get_percent(self):
         return self.result["progress_percent"]
@@ -90,7 +128,9 @@ class celery_progressbar_stat(object):
         
         if fatal:
             self.is_killed = True
-            revoke(self.task_stat_id, terminate=True)
+            raise SystemExit
+            # revoke(self.task_stat_id, terminate=True)
+            
 
         # This is to avoid raising the same error again as we raise exception and catching and re-raising it
         if e == self.last_err:
@@ -179,12 +219,13 @@ class celery_progressbar_stat(object):
 @shared_task
 def test_progressbar(user_id=1):
     from time import sleep
-    c_stat = celery_progressbar_stat(current_task, user_id)
-    c_stat.msg = "Tesing"
+    
+    with celery_progressbar_stat(current_task, user_id) as c_stat:
+        c_stat.msg = "Tesing"
 
-    for i in range(0,101):
-        sleep(.3)
-        if i==6:
-            from django.utils.safestring import mark_safe
-            c_stat.raise_err("Error: This error should show up", e="test_err", sticky_msg=mark_safe("<p>TEST STICKY ERROR.</p><img src='https://cdn0.iconfinder.com/data/icons/cosmo-medicine/40/test-tube_2-128.png'>"))
-        c_stat.percent = i
+        for i in range(0,101):
+            sleep(.3)
+            if i==6:
+                from django.utils.safestring import mark_safe
+                c_stat.raise_err("Error: This error should show up", e="test_err", sticky_msg=mark_safe("<p>TEST STICKY ERROR.</p><img src='https://cdn0.iconfinder.com/data/icons/cosmo-medicine/40/test-tube_2-128.png'>"))
+            c_stat.percent = i

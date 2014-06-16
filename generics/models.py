@@ -124,3 +124,18 @@ class Messages(models.Model):
         return self.msg[:40]
 
 
+
+
+class CeleryTasks(models.Model):
+    """
+    Keeps track of celery Tasks
+    """
+    task_id = models.CharField('task id', max_length=50, unique=True, db_index=True)
+    status = models.CharField('state', max_length=12, default="waiting", db_index=True)
+    creation_date = models.DateTimeField('Creation Date', auto_now_add=True)
+    start_date = models.DateTimeField('Start Date', null=True)
+    end_date = models.DateTimeField('End Date', default=None, null=True)
+    user = models.ForeignKey(User, related_name="tasks_of_user")
+
+    def __unicode__(self):
+        return "%s: %s" % (self.task_id, self.status)

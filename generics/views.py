@@ -7,11 +7,10 @@ from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse
 # from django.core.cache import cache
 from django.utils import timezone
+from django.db import IntegrityError
 
 from generics import tasks
-
-
-from generics.models import MessagesStatus
+from generics.models import CeleryTasks, MessagesStatus
 
 
 
@@ -105,11 +104,20 @@ def celery_test(request):
     if not request.user.is_authenticated() or not request.user.is_staff:
         raise PermissionDenied
 
+
     # you need to alwasy specify user_id with kwargs and NOT args
     job = tasks.test_progressbar.delay(user_id=request.user.id)
     # request.session['task_id'] = job.id
-    data = job.id
-  
-    json_data = json.dumps(data)
+    task_id = job.id
+    
+    try:
+        CeleryTasks.objects.create(task_id=task_id, user=request.user)
+    except IntegrityError:
+        # We don't want to have 2 tasks with the same ID
+        from celery.task.control import revoke
+        revoke(task_id, terminate=True)
+        raise
+
+    json_data = json.dumps(task_id)
 
     return HttpResponse(json_data, mimetype='application/json')
