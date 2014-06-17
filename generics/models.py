@@ -130,8 +130,10 @@ class CeleryTasks(models.Model):
     """
     Keeps track of celery Tasks
     """
+    objects = GenericManager()
+
     task_id = models.CharField('task id', max_length=50, unique=True, db_index=True)
-    status = models.CharField('state', max_length=12, default="waiting", db_index=True)
+    status = models.CharField('state', max_length=40, default="waiting", db_index=True)
     creation_date = models.DateTimeField('Creation Date', auto_now_add=True)
     start_date = models.DateTimeField('Start Date', null=True)
     end_date = models.DateTimeField('End Date', default=None, null=True)

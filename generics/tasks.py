@@ -58,7 +58,12 @@ class celery_progressbar_stat(object):
         self.celery_task_history_obj.status="active"
         self.celery_task_history_obj.start_date=timezone.now()
         self.celery_task_history_obj.save(update_fields=["status", "start_date"])
-
+        now = timezone.now()
+        try:
+            CeleryTasks.objects.filter(creation_date__lte=now-timezone.timedelta(hours=24), status__in=["active", "waiting"]).update(status="must have failed")
+            CeleryTasks.objects.filter(creation_date__lte=now-timezone.timedelta(hours=600)).delete()
+        except:
+            logger.error("Error in cleaning up CeleryTasks History", exc_info=True)
 
     def __enter__(self):
         return self
