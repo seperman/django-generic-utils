@@ -31,6 +31,37 @@ except ImportError:
 
 
 
+@decorator_with_args
+def progressbar_blockytask(fn, task_key=""):
+    @wraps(fn)
+    def wrapped(*args, **kwargs):
+
+        request = args[0]
+
+        if not request.user.is_authenticated() or not request.user.is_staff:
+            raise PermissionDenied
+
+        if task_key and CeleryTasks.objects.filter(key=task_key, status__in=["waiting","active"]):
+
+            json_data = json.dumps("Error: %s Task is already running" % task_key)
+            return HttpResponse(json_data, mimetype='application/json')
+
+        task_id = fn(*args, **kwargs)
+
+        try:
+            CeleryTasks.objects.create(task_id=task_id, user=request.user, key=task_key)
+        except IntegrityError:
+            # We don't want to have 2 tasks with the same ID
+            from celery.task.control import revoke
+            revoke(task_id, terminate=True)
+            raise
+
+        json_data = json.dumps(task_id)
+
+        return HttpResponse(json_data, mimetype='application/json')
+
+    return wrapped
+
 
 
 
@@ -102,42 +133,6 @@ def messages_api(request):
 
     return HttpResponse(json.dumps(result), mimetype='application/json')
 
-
-
-
-
-
-
-@decorator_with_args
-def progressbar_blockytask(fn, task_key=None):
-    @wraps(fn)
-    def wrapped(*args, **kwargs):
-
-        request = args[0]
-
-        if not request.user.is_authenticated() or not request.user.is_staff:
-            raise PermissionDenied
-
-        if task_key and CeleryTasks.objects.filter(key=task_key, status__in=["waiting","active"]):
-
-            json_data = json.dumps("Error: %s Task is already running" % task_key)
-            return HttpResponse(json_data, mimetype='application/json')
-
-        task_id = fn(*args, **kwargs)
-
-        try:
-            CeleryTasks.objects.create(task_id=task_id, user=request.user, key=task_key)
-        except IntegrityError:
-            # We don't want to have 2 tasks with the same ID
-            from celery.task.control import revoke
-            revoke(task_id, terminate=True)
-            raise
-
-        json_data = json.dumps(task_id)
-
-        return HttpResponse(json_data, mimetype='application/json')
-
-    return wrapped
 
 
 

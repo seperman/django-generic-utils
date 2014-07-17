@@ -12,11 +12,12 @@ class Migration(SchemaMigration):
         db.create_table(u'generics_celerytasks', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('task_id', self.gf('django.db.models.fields.CharField')(unique=True, max_length=50, db_index=True)),
-            ('status', self.gf('django.db.models.fields.CharField')(default='waiting', max_length=12, db_index=True)),
+            ('status', self.gf('django.db.models.fields.CharField')(default='waiting', max_length=40, db_index=True)),
             ('creation_date', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
             ('start_date', self.gf('django.db.models.fields.DateTimeField')(null=True)),
             ('end_date', self.gf('django.db.models.fields.DateTimeField')(default=None, null=True)),
             ('user', self.gf('django.db.models.fields.related.ForeignKey')(related_name='tasks_of_user', to=orm['auth.User'])),
+            ('key', self.gf('django.db.models.fields.CharField')(default='', max_length=50, db_index=True, blank=True)),
         ))
         db.send_create_signal(u'generics', ['CeleryTasks'])
 
@@ -68,8 +69,9 @@ class Migration(SchemaMigration):
             'creation_date': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'end_date': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'key': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '50', 'db_index': 'True', 'blank': 'True'}),
             'start_date': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
-            'status': ('django.db.models.fields.CharField', [], {'default': "'waiting'", 'max_length': '12', 'db_index': 'True'}),
+            'status': ('django.db.models.fields.CharField', [], {'default': "'waiting'", 'max_length': '40', 'db_index': 'True'}),
             'task_id': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '50', 'db_index': 'True'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'tasks_of_user'", 'to': u"orm['auth.User']"})
         },
