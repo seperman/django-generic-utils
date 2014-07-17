@@ -109,7 +109,7 @@ def messages_api(request):
 
 
 @decorator_with_args
-def progressbar_blockytask(fn, task_key):
+def progressbar_blockytask(fn, task_key=None):
     @wraps(fn)
     def wrapped(*args, **kwargs):
 
@@ -119,7 +119,9 @@ def progressbar_blockytask(fn, task_key):
             raise PermissionDenied
 
         if task_key and CeleryTasks.objects.filter(key=task_key, status__in=["waiting","active"]):
-            raise Exception("%s Task is already running" % task_key)
+
+            json_data = json.dumps("Error: %s Task is already running" % task_key)
+            return HttpResponse(json_data, mimetype='application/json')
 
         task_id = fn(*args, **kwargs)
 
@@ -141,7 +143,7 @@ def progressbar_blockytask(fn, task_key):
 
 
 
-@progressbar_blockytask(task_key="celery_test")
+@progressbar_blockytask()
 def celery_test(request):
     """ Tests celery and celery progress bar """
 
