@@ -70,7 +70,7 @@ class celery_progressbar_stat(object):
 
     def __exit__(self, exit_type, exit_value, traceback):
 
-        logger.info("!!!%s  ----  %s" % (exit_type,exit_value) )
+        logger.info("!!!Exiting Progress bar. Type: %s  ----  Value: %s" % (exit_type,exit_value) )
         if exit_type == SystemExit:
             self.celery_task_history_obj.status="killed"
         elif exit_type:
@@ -134,7 +134,6 @@ class celery_progressbar_stat(object):
         if fatal:
             self.is_killed = True
             raise SystemExit
-            # revoke(self.task_stat_id, terminate=True)
             
 
         # This is to avoid raising the same error again as we raise exception and catching and re-raising it
@@ -232,9 +231,16 @@ def test_progressbar(user_id=1):
         for i in range(0,101):
             sleep(.3)
             if i==6:
+                logger.info("test progress bar at 6%")
                 c_stat.raise_err("Error: This error should show up", e="test_err", sticky_msg=mark_safe("<p>TEST STICKY ERROR.</p><img src='https://cdn0.iconfinder.com/data/icons/cosmo-medicine/40/test-tube_2-128.png'>"))
 
             if i==16:
-                c_stat.raise_err("Error again: This error should show up too", e="test_err")
+                logger.info("test progress bar at 16%")
+                c_stat.raise_err("Error again: This error should show up too", e="test_err2")
+
+
+            if i==22:
+                logger.info("test progress bar at 22%")
+                c_stat.raise_err("Error: This error should show NOT up since it is raised before", e="test_err2")
 
             c_stat.percent = i

@@ -151,34 +151,3 @@ def celery_test(request):
 
     return job.id
 
-
-
-
-def celery_testOLD(request):
-    """ Tests celery and celery progress bar """
-
-    if not request.user.is_authenticated() or not request.user.is_staff:
-        raise PermissionDenied
-
-    task_key = "celery_test"
-    if task_key and CeleryTasks.objects.filter(key=task_key, status__in=["waiting","active"]):
-        raise Exception("Task is already running")
-
-
-    # you need to alwasy specify user_id with kwargs and NOT args
-    job = tasks.test_progressbar.delay(user_id=request.user.id)
-    # request.session['task_id'] = job.id
-    task_id = job.id
-        
-
-    try:
-        CeleryTasks.objects.create(task_id=task_id, user=request.user, key=task_key)
-    except IntegrityError:
-        # We don't want to have 2 tasks with the same ID
-        from celery.task.control import revoke
-        revoke(task_id, terminate=True)
-        raise
-
-    json_data = json.dumps(task_id)
-
-    return HttpResponse(json_data, mimetype='application/json')

@@ -222,6 +222,10 @@ def decorator_with_args(decorator_to_enhance):
 
 
 def datetime_difference(start_time, end_time):
+    """
+    returns the time difference of two datetime objects in HH:MM:SS format
+    """
+    
     l = end_time - start_time
 
     if l.days<0:
