@@ -3,6 +3,7 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
 import types
+from generics.functions import datetime_difference
 
 import logging
 logger = logging.getLogger(__name__)
@@ -119,6 +120,11 @@ class Messages(models.Model):
     msg_code = models.CharField("Message Unique Code", max_length=30, unique=True, db_index=True)
     button_txt = models.CharField("Button Text", max_length=50, default="Ok")
     users = models.ManyToManyField(User, through=MessagesStatus, related_name="messages_of_user",help_text="Users who need to akhnowledge this message")
+
+
+    class Meta:
+        verbose_name_plural = 'Messages'
+        verbose_name = 'Message'
     
     def __unicode__(self):
         return self.msg[:40]
@@ -138,6 +144,26 @@ class CeleryTasks(models.Model):
     start_date = models.DateTimeField('Start Date', null=True)
     end_date = models.DateTimeField('End Date', default=None, null=True)
     user = models.ForeignKey(User, related_name="tasks_of_user")
+    key = models.CharField("Task Blocking Key", max_length=50, db_index=True, default="", blank=True)
+
+    @property
+    def duration(self):
+        if self.end_date:
+            try:
+                duration = datetime_difference(self.start_date, self.end_date)
+            except:
+                duration = "Err"
+        else:
+            duration = "Not finished"
+
+        return duration
+
+
+    class Meta:
+        verbose_name_plural = 'Tasks'
+        verbose_name = 'Task'
 
     def __unicode__(self):
         return "%s: %s" % (self.task_id, self.status)
+
+

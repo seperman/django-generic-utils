@@ -8,9 +8,11 @@ from django.http import HttpResponse
 # from django.core.cache import cache
 from django.utils import timezone
 from django.db import IntegrityError
+from functools import wraps    #deals with decorats shpinx documentation
 
 from generics import tasks
 from generics.models import CeleryTasks, MessagesStatus
+from generics.functions import decorator_with_args
 
 
 
@@ -25,6 +27,12 @@ try:
 except ImportError:
     def revoke(*args, **kwargs):
         return None
+
+
+
+
+
+
 
 
 def task_api(request):
@@ -98,20 +106,73 @@ def messages_api(request):
 
 
 
+
+
+@decorator_with_args
+def progressbar_blockytask(fn, task_key):
+    @wraps(fn)
+    def wrapped(*args, **kwargs):
+
+        request = args[0]
+
+        if not request.user.is_authenticated() or not request.user.is_staff:
+            raise PermissionDenied
+
+        if task_key and CeleryTasks.objects.filter(key=task_key, status__in=["waiting","active"]):
+            raise Exception("%s Task is already running" % task_key)
+
+        task_id = fn(*args, **kwargs)
+
+        try:
+            CeleryTasks.objects.create(task_id=task_id, user=request.user, key=task_key)
+        except IntegrityError:
+            # We don't want to have 2 tasks with the same ID
+            from celery.task.control import revoke
+            revoke(task_id, terminate=True)
+            raise
+
+        json_data = json.dumps(task_id)
+
+        return HttpResponse(json_data, mimetype='application/json')
+
+    return wrapped
+
+
+
+
+
+@progressbar_blockytask(task_key="celery_test")
 def celery_test(request):
+    """ Tests celery and celery progress bar """
+
+    # you need to alwasy specify user_id with kwargs and NOT args
+    
+    job = tasks.test_progressbar.delay(user_id=request.user.id)
+
+    return job.id
+
+
+
+
+def celery_testOLD(request):
     """ Tests celery and celery progress bar """
 
     if not request.user.is_authenticated() or not request.user.is_staff:
         raise PermissionDenied
+
+    task_key = "celery_test"
+    if task_key and CeleryTasks.objects.filter(key=task_key, status__in=["waiting","active"]):
+        raise Exception("Task is already running")
 
 
     # you need to alwasy specify user_id with kwargs and NOT args
     job = tasks.test_progressbar.delay(user_id=request.user.id)
     # request.session['task_id'] = job.id
     task_id = job.id
-    
+        
+
     try:
-        CeleryTasks.objects.create(task_id=task_id, user=request.user)
+        CeleryTasks.objects.create(task_id=task_id, user=request.user, key=task_key)
     except IntegrityError:
         # We don't want to have 2 tasks with the same ID
         from celery.task.control import revoke

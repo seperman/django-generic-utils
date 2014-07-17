@@ -224,6 +224,7 @@ class celery_progressbar_stat(object):
 @shared_task
 def test_progressbar(user_id=1):
     from time import sleep
+    from django.utils.safestring import mark_safe
     
     with celery_progressbar_stat(current_task, user_id) as c_stat:
         c_stat.msg = "Tesing"
@@ -231,6 +232,9 @@ def test_progressbar(user_id=1):
         for i in range(0,101):
             sleep(.3)
             if i==6:
-                from django.utils.safestring import mark_safe
                 c_stat.raise_err("Error: This error should show up", e="test_err", sticky_msg=mark_safe("<p>TEST STICKY ERROR.</p><img src='https://cdn0.iconfinder.com/data/icons/cosmo-medicine/40/test-tube_2-128.png'>"))
+
+            if i==16:
+                c_stat.raise_err("Error again: This error should show up too", e="test_err")
+
             c_stat.percent = i
