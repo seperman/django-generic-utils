@@ -5,7 +5,6 @@ import json
 from django.core.exceptions import PermissionDenied
 # from django.http import Http404
 from django.http import HttpResponse
-# from django.core.cache import cache
 from django.utils import timezone
 from django.db import IntegrityError
 from functools import wraps    #deals with decorats shpinx documentation
@@ -46,7 +45,11 @@ def progressbar_blockytask(fn, task_key=""):
             json_data = json.dumps("Error: %s Task is already running" % task_key)
             return HttpResponse(json_data, mimetype='application/json')
 
-        task_id = fn(*args, **kwargs)
+        try:
+            task_id = fn(*args, **kwargs)
+        except:
+            json_data = json.dumps("Error: %s Task failed to run" % task_key)
+            return HttpResponse(json_data, mimetype='application/json')            
 
         try:
             CeleryTasks.objects.create(task_id=task_id, user=request.user, key=task_key)
