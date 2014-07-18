@@ -75,7 +75,7 @@ class CeleryTasksAdmin(admin.ModelAdmin):
         self.message_user(request, mark_safe(selected_tasks_stats))
         
 
-    double_check_state.short_description = "Double Check the state of selected!"
+    double_check_state.short_description = "Retrieve the state of selected items!"
 
 
 # from django.db.models.base import FieldDoesNotExist

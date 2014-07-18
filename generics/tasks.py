@@ -70,9 +70,11 @@ class celery_progressbar_stat(object):
 
     def __exit__(self, exit_type, exit_value, traceback):
 
-        logger.info("!!!Exiting Progress bar. Type: %s  ----  Value: %s" % (exit_type,exit_value) )
+        # logger.info("!!!Exiting Progress bar. Type: %s  ----  Value: %s" % (exit_type,exit_value) )
         if exit_type == SystemExit:
             self.celery_task_history_obj.status="killed"
+            self.is_killed = True  #killed by error but we still set is_killed to true
+            self.msg = "Terminated by the user."
         elif exit_type:
             self.celery_task_history_obj.status="error"
             self.is_killed = True  #killed by error but we still set is_killed to true
