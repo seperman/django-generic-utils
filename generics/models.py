@@ -160,8 +160,8 @@ class CeleryTasks(models.Model):
 
 
     class Meta:
-        verbose_name_plural = 'Tasks'
-        verbose_name = 'Task'
+        verbose_name_plural = 'Tasks History'
+        verbose_name = 'Task History'
 
     def __unicode__(self):
         return "%s: %s" % (self.task_id, self.status)

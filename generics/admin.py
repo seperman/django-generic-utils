@@ -35,8 +35,8 @@ class CeleryTasksAdmin(admin.ModelAdmin):
 
     actions = ("double_check_state",)
 
-    def has_delete_permission(self, request, obj=None):
-        return False
+    # def has_delete_permission(self, request, obj=None):
+    #     return False
 
     def has_add_permission(self, request):
         return False
@@ -45,8 +45,8 @@ class CeleryTasksAdmin(admin.ModelAdmin):
     def get_actions(self, request):
         actions = super(CeleryTasksAdmin, self).get_actions(request)
         
-        if 'delete_selected' in actions:
-            del actions['delete_selected']
+        # if 'delete_selected' in actions:
+        #     del actions['delete_selected']
         
         return actions
 
@@ -63,7 +63,7 @@ class CeleryTasksAdmin(admin.ModelAdmin):
             task_key = "celery-stat-%s" % task_id
             task_stat = cache.get(task_key)
             if task_stat:
-                task_stat_formatted = ', '.join(['%s:: %s' % (key, value) for (key, value) in task_stat.items()])
+                task_stat_formatted = ', '.join(['%s: %s' % (key, value) for (key, value) in task_stat.items()])
                 selected_tasks_stats = "%s <p>---------</p><p>%s:</p> <p>%s</p>" % (selected_tasks_stats, task_id, task_stat_formatted)
 
         if selected_tasks_stats:

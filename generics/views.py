@@ -31,7 +31,7 @@ except ImportError:
 
 
 @decorator_with_args
-def progressbar_blockytask(fn, task_key=""):
+def progressbarit(fn, task_key=""):
     @wraps(fn)
     def wrapped(*args, **kwargs):
 
@@ -141,7 +141,7 @@ def messages_api(request):
 
 
 
-@progressbar_blockytask()
+@progressbarit()
 def celery_test(request):
     """ Tests celery and celery progress bar """
 
