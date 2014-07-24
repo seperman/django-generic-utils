@@ -37,6 +37,15 @@ class Analyze_HTML(object):
         finds all img 'tags' that the 'src' attribute matches "the_match" re object 
         
         analyze_html.find_tag_with_attr_that_matches(tag='img', attr='src', the_match=match_urls)
+
+
+        getting all the hyperlinks that match match_urls object:
+        aa = ana.find_tag_with_attr_that_matches(tag='a', attr='href', the_match=match_urls)
+
+        for link in aa:
+            print link['href']
+
+
         """
         elements = self.find_tag(tag)
         return [el for el in elements if the_match.match(el[attr])]
