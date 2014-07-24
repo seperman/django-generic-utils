@@ -5,9 +5,17 @@ from django.conf import settings
 from django.utils import timezone
 from time import sleep
 
-from celery import shared_task, current_task
+#Trying to load celery
+try:
+    from celery import shared_task, current_task
+except ImportError:
+    def shared_task(*args, **kwargs):
+        return None
+        
+    def current_task(*args, **kwargs):
+        return None
 
-# from celery.task.control import revoke
+
 from generics.models import CeleryTasks
 
 try:

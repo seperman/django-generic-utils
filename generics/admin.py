@@ -78,8 +78,6 @@ class CeleryTasksAdmin(admin.ModelAdmin):
     double_check_state.short_description = "Retrieve the state of selected items!"
 
 
-# from django.db.models.base import FieldDoesNotExist
-
 admin.site.register(Messages, MessagesAdmin)
 admin.site.register(CeleryTasks, CeleryTasksAdmin)
 
