@@ -91,6 +91,7 @@ class GenericManager(models.Manager):
 
 
 
+
 class MessagesStatus(models.Model):
     message = models.ForeignKey('Messages', related_name="status_of_user_messages")
     user = models.ForeignKey(User, related_name="status_of_messaged_users")
@@ -108,15 +109,43 @@ class MessagesStatus(models.Model):
 
 
 
+class MessagesManager(GenericManager):
+    
+    def create_msg(self, msg, msg_code, username):
+        # import ipdb
+        # ipdb.set_trace()
+
+        from django.db import IntegrityError
+
+        try:
+            message_obj = self.get(msg_code=msg_code)
+        except:
+            message_obj = self.create(msg=msg, msg_code=msg_code)
+        else:
+            message_obj.msg=msg
+            message_obj.save()
+
+        the_user = User.objects.get(username=username)
+        try:
+            MessagesStatus.objects.create(message=message_obj, user=the_user)
+        except IntegrityError:
+            ms = MessagesStatus.objects.get(message=message_obj, user=the_user)
+            ms.akhnowledge_date=None
+            ms.save()
+        except:
+            logger.error("Error when creating user message: message status:", exc_info=True)
+
+
+
 
 class Messages(models.Model):
     """
     Messages for users
     """
 
-    objects = GenericManager()
+    objects = MessagesManager()
 
-    msg = models.CharField("Message", max_length=255)
+    msg = models.CharField("Message", max_length=255, default="Message")
     msg_code = models.CharField("Message Unique Code", max_length=30, unique=True, db_index=True)
     button_txt = models.CharField("Button Text", max_length=50, default="Ok")
     button_link = models.URLField("Button Link", max_length=200, default="", blank=True)
