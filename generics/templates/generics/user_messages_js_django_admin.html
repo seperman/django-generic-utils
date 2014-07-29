@@ -1,14 +1,14 @@
 <script type="text/javascript" charset="utf-8">
     {% if user_messages %}
-        $(document).ready(function() {
+        django.jQuery(document).ready(function() {
             {% for message in user_messages %}
-                $(".user-message-btn-{{ message.id }}").click(function(){
-                    $.get("/generics/messages_api?id={{ message.id }}&action=remove")
+                django.jQuery(".user-message-btn-{{ message.id }}").click(function(){
+                    django.jQuery.get("/generics/messages_api?id={{ message.id }}&action=remove")
                         .done(function( data ) {
                             {% if message.button_link %}
                                 location.href = "{{ message.button_link }}";
                             {% else %}
-                                $(".user-message-{{ message.id }}").remove();
+                                django.jQuery(".user-message-{{ message.id }}").remove();
                             {% endif %}
                         })
                         .fail(function( data ) {

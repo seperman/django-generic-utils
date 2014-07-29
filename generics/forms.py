@@ -129,12 +129,12 @@ class MessagesForm(forms.ModelForm):
             # sinice initial data is in a different format than target data, we convert them to compatible sets
             try:
                 initial_users = set(map(unicode, self.initial['users']))
-            except MultiValueDictKeyError:
+            except (MultiValueDictKeyError, KeyError):
                 initial_users = set([])
 
             try:
                 target_users = set(self.cleaned_data['users'])
-            except MultiValueDictKeyError:
+            except (MultiValueDictKeyError, KeyError):
                 target_users = set([])
             
             users_removed = initial_users - target_users

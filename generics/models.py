@@ -119,6 +119,7 @@ class Messages(models.Model):
     msg = models.CharField("Message", max_length=255)
     msg_code = models.CharField("Message Unique Code", max_length=30, unique=True, db_index=True)
     button_txt = models.CharField("Button Text", max_length=50, default="Ok")
+    button_link = models.URLField("Button Link", max_length=200, default="", blank=True)
     users = models.ManyToManyField(User, through=MessagesStatus, related_name="messages_of_user",help_text="Users who need to akhnowledge this message")
 
 
