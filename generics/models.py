@@ -112,8 +112,10 @@ class MessagesStatus(models.Model):
 class MessagesManager(GenericManager):
     
     def create_msg(self, msg, msg_code, username):
-        # import ipdb
-        # ipdb.set_trace()
+        """
+        This is a simple function to message one user. If the message has been akhnowledged before
+        it will pop it up again.
+        """
 
         from django.db import IntegrityError
 
