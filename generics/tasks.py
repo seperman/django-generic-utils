@@ -229,6 +229,32 @@ class celery_progressbar_stat(object):
 
 
 
+class celery_progressbar_stat_dummy(celery_progressbar_stat):
+    """ does not update the progress bar info for the task.
+        it is used when testing the task from the command line
+    """
+
+    def __init__(self, task, user_id, cache_time=200):
+        self.result={'msg':"IN PROGRESS", 'sticky_msg':'', 'err':'', 'progress_percent': 0, 'is_killed':False, 'user_id':user_id}
+        self.last_err = ""
+        self.task_id = "test id"
+        self.task_stat_id = "celery-stat-%s" % self.task_id
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exit_type, exit_value, traceback):
+        pass
+
+
+    def set_cache(self):
+        pass
+
+
+
+
+
+
 
 @shared_task
 def test_progressbar(user_id=1):
