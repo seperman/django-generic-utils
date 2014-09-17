@@ -169,8 +169,7 @@ def wget(the_url):
         fd = urllib.urlopen(the_url)
         return io.BytesIO(fd.read())
     except urllib.HTTPError:
-        raise Exception("%s can't be accessed" % the_url)
-    return False
+        return False
 
 
 
