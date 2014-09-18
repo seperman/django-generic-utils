@@ -226,13 +226,11 @@ function progress_class(options){
           progressLabel.text( task_name +" "+ progressbar.progressbar( "value" ) + "%" );
         },
         complete: function() {
-          progressLabel.text( "finished!" );
-          clearInterval(progressbar_updator);
-          setTimeout( function(){progressbar.parent().parent().remove();} , 5000 );
-          // This will ONLY reload the part of page we need into the same part!!
-          // However grappelli is fucked up and it is better to just use simple refresh
-          // $('#grp-content').load(window.location.pathname + ' #grp-content > *');   
           window.location.reload(1);
+          // progressLabel.text( "finished!" );
+          // clearInterval(progressbar_updator);
+          // console.log("Should reload. Does it?")
+          // setTimeout( function(){progressbar.parent().parent().remove();} , 5000 );
         }
       });
 
