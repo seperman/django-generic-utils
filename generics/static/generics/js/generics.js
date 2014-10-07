@@ -1,3 +1,4 @@
+/*jshint multistr: true */
 /*
 Written by Erasmose 2014
 www.ZepWorks.com
