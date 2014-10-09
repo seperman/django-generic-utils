@@ -52,11 +52,6 @@ class GenericManager(models.Manager):
             else:
                 raise Exception("Only 'list' and 'list_of_dict' as output are supported for multi field input")
 
-        # import pdb
-        # pdb.set_trace()
-        
-
-        # logger.info("flat_field_list_filtered result: %s" % result)
         
         return result
 
