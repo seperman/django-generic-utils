@@ -70,8 +70,8 @@ When you change something (object already exists):
 class MessagesForm(forms.ModelForm):
     class Meta:
         model = Messages
-
-
+        exclude = []
+        # fields = ('msg', 'msg_code', 'button_txt', 'button_link', 'users',)
 
     users = forms.MultipleChoiceField()
 
@@ -80,9 +80,6 @@ class MessagesForm(forms.ModelForm):
         super(MessagesForm, self).__init__(*args,**kwargs)
 
 
-
-# if 1:
-#     if 1:
         users_objects = User.objects.all().only("pk", "username",)
         choices = []        
         for u in users_objects:
@@ -115,18 +112,9 @@ class MessagesForm(forms.ModelForm):
 
         # Get the unsaved model instance
         instance = forms.ModelForm.save(self, False)
-        # users = self.cleaned_data['users']
 
-        # logger.info("=================================")
-        # logger.info(locals())
-        # logger.info(self.__dict__)
-        # logger.info("=================================")
-        # for u in 
-        # instance.status_of_user_messages = 
         def save_m2m():
-            # import pdb;
-            # pdb.set_trace();
-            # sinice initial data is in a different format than target data, we convert them to compatible sets
+            # since initial data is in a different format than target data, we convert them to compatible sets
             try:
                 initial_users = set(map(unicode, self.initial['users']))
             except (MultiValueDictKeyError, KeyError):
