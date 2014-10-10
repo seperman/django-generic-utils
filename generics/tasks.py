@@ -48,8 +48,10 @@ class celery_progressbar_stat(object):
         self.task_stat_id = "celery-stat-%s" % self.task_id
         self.task_msg_all_id = "celery-%s-msg-all" % self.task_id
         self.cache_time = cache_time
-        self.result={'msg':"IN PROGRESS", 'sticky_msg':'', 'err':'', 'progress_percent': 0, 'is_killed':False, 'user_id':user_id, 'msg_index':0, }
+        self.result={'msg':"IN PROGRESS", 'sticky_msg':'', 'progress_percent': 0, 'is_killed':False, 'user_id':user_id, 'msg_index':0, }
         self.last_err = ""
+        self.last_err_type = None
+
         self.msg = ""
         cache.set(self.task_msg_all_id, "", self.cache_time)
 
@@ -99,7 +101,7 @@ class celery_progressbar_stat(object):
 
         # The cache to remain for another minute
         cache.replace(self.task_stat_id, self.result, time=60)
-        cache.delete(self.task_msg_all_id)
+        cache.replace(self.task_msg_all_id, "", time=60)
 
     def get_percent(self):
         return self.result["progress_percent"]
@@ -116,14 +118,17 @@ class celery_progressbar_stat(object):
         self.set_cache()
 
     def get_err(self):
-        return self.result["err"]
+        return self.last_err
 
     def set_err(self, val):
-        self.result["err"] = val
-        val=val+'\n'
+        self.last_err = val
+        val = "<hr class='line-seperator'><p>%s</p>" % val
         self.result["msg_index"] += len(val)
         self.set_cache()
+        logger.warning("val: %s" % val)
         cache.append(self.task_msg_all_id, val)
+        logger.warning("id: %s" % self.task_msg_all_id)
+        logger.warning("msg all from cache: %s" % cache.get(self.task_msg_all_id))
 
     def get_sticky_msg(self):
         return self.result["sticky_msg"]
@@ -150,8 +155,6 @@ class celery_progressbar_stat(object):
 
         if sticky_msg:
             self.sticky_msg = sticky_msg
-        elif fatal:
-            self.sticky_msg = msg
         
         if fatal:
             self.is_killed = True
@@ -159,10 +162,10 @@ class celery_progressbar_stat(object):
             
 
         # This is to avoid raising the same error again as we raise exception and catching and re-raising it
-        if e == self.last_err:
+        if e == self.last_err_type:
             return "The error was just raised"
         else:
-            self.last_err = e
+            self.last_err_type = e
 
         self.msg = msg
 

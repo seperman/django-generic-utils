@@ -19,7 +19,7 @@ from generics.functions import decorator_with_args
 
 import logging
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.WARNING)
+logger.setLevel(logging.INFO)
 
 #Trying to load celery
 try:
@@ -94,13 +94,20 @@ def task_api(request):
         task_stat = cache.get(task_key)
         try:
             if task_stat['user_id'] != request.user.id:
-                task_stat = None
+                return HttpResponse('Unauthorized', status=401)
         except TypeError:
-            task_stat = None
+            return HttpResponse('Unauthorized', status=401)
 
-        if task_stat and msg_index_client:
-            task_msg_all_id = "celery-%s-msg-all" % task_id
-            task_stat['msg_chunk'] = cache.get(task_msg_all_id)[msg_index_client:]
+        else:
+            # logger.info("msg_index_client: %s   task_stat['msg_index']: %s" % (msg_index_client, task_stat['msg_index']))
+            try:
+                msg_index_client = int(msg_index_client)
+            except:
+                task_stat['msg_chunk'] = "Error in pointer index server call"
+            else:
+                if msg_index_client is not False and msg_index_client < task_stat['msg_index']:
+                    whole_msg = cache.get("celery-%s-msg-all" % task_id)
+                    task_stat['msg_chunk'] = whole_msg[msg_index_client:]
     else:
         task_stat = None
 

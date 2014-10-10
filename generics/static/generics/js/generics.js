@@ -56,6 +56,7 @@ function progress_class(options){
 
   var task_url = options.task_url || null;
   var task_name = options.task_name || "task";
+  var original_task_name = options.original_task_name || "task";
   var sec = options.sec*1000 || 5000;
   var waiting = false;
   var waiting_for_cycles = options.waiting_for_cycles || 4;
@@ -72,6 +73,8 @@ function progress_class(options){
   var jquery_dialog = options.jquery_dialog || "true";
   var previous_err = "";
   var previous_sticky_msg = "";
+  var msg_index_client = 0;
+  var previous_msg_index_client = 0;
 
 
 
@@ -122,7 +125,7 @@ function progress_class(options){
       url: "/generics/task_api",
       type: "POST",
       cache: false,
-      data: {id: the_id, terminate: terminate}
+      data: {id: the_id, terminate: terminate, msg_index_client: msg_index_client}
       } )
       .done(function(celery_respone, s) {
 
@@ -130,16 +133,17 @@ function progress_class(options){
           // console.log(the_id + " :: " + celery_respone.progress_percent + " " + s)
           if (celery_respone.msg !== null && celery_respone.msg !=="") {
             task_name = celery_respone.msg.slice(0,32);
+            msg_index_client = celery_respone.msg_index
           }
           progress(celery_respone.progress_percent);
 
           // checking to see if the msg starts with error:
-          if (celery_respone.err && celery_respone.err !== previous_err){
-            previous_err = celery_respone.err;
+          if (celery_respone.msg_chunk !== "" && msg_index_client !== previous_msg_index_client){
+            previous_msg_index_client = msg_index_client;
             if ($("#tasks_err_log").length == 0){
               $("#footerprogressbar-grp").prepend('<div id="tasks_err_log">');
             }
-            $("#tasks_err_log").append("<hr class='line-seperator'><p>"+celery_respone.err+"</p>");
+            $("#tasks_err_log").append(celery_respone.msg_chunk);
           }
           if (celery_respone.sticky_msg && celery_respone.sticky_msg !== previous_sticky_msg ){
             previous_sticky_msg = celery_respone.sticky_msg;
@@ -227,11 +231,11 @@ function progress_class(options){
           progressLabel.text( task_name +" "+ progressbar.progressbar( "value" ) + "%" );
         },
         complete: function() {
-          window.location.reload(1);
-          // progressLabel.text( "finished!" );
-          // clearInterval(progressbar_updator);
-          // console.log("Should reload. Does it?")
-          // setTimeout( function(){progressbar.parent().parent().remove();} , 5000 );
+          $("#footerprogressbar-grp").prepend('<div id="task_finished">');
+          $('#task_finished')
+            .append('<input type="button" value="' + original_task_name + ' finished.">')
+            .button()
+            .click(function(){ window.location.reload(1);});
         }
       });
 
@@ -263,7 +267,7 @@ function progress_class(options){
   };
   var dialog_delete_task_simple = function()
     {
-      var r=confirm("Are you sure?");
+      var r=confirm("Are you sure to terminate the task?");
       if (r===true)
         {
           terminate = 1;
