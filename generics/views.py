@@ -43,13 +43,13 @@ def progressbarit(fn, task_key=""):
         if task_key and CeleryTasks.objects.filter(key=task_key, status__in=["waiting","active"]):
 
             json_data = json.dumps("Error: %s Task is already running" % task_key)
-            return HttpResponse(json_data, mimetype='application/json')
+            return HttpResponse(json_data, content_type='application/json')
 
         try:
             task_id = fn(*args, **kwargs)
         except:
             json_data = json.dumps("Error: %s Task failed to run" % task_key)
-            return HttpResponse(json_data, mimetype='application/json')            
+            return HttpResponse(json_data, content_type='application/json')            
 
         try:
             CeleryTasks.objects.create(task_id=task_id, user=request.user, key=task_key)
@@ -61,7 +61,7 @@ def progressbarit(fn, task_key=""):
 
         json_data = json.dumps(task_id)
 
-        return HttpResponse(json_data, mimetype='application/json')
+        return HttpResponse(json_data, content_type='application/json')
 
     return wrapped
 
@@ -105,7 +105,7 @@ def task_api(request):
         cache.set(task_id, task_stat, 2)
 
 
-    return HttpResponse(json.dumps(task_stat), mimetype='application/json')
+    return HttpResponse(json.dumps(task_stat), content_type='application/json')
 
 
 
@@ -134,7 +134,7 @@ def messages_api(request):
             # except MessagesStatus.DoesNotExist:
             #     raise Http404
 
-    return HttpResponse(json.dumps(result), mimetype='application/json')
+    return HttpResponse(json.dumps(result), content_type='application/json')
 
 
 
