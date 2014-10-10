@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function, absolute_import, division
-from django.core.cache import cache
+# from django.core.cache import cache
+from generics.cache import cache
 from django.conf import settings
 from django.utils import timezone
 from time import sleep
@@ -42,12 +43,16 @@ class celery_progressbar_stat(object):
 
         This will automatically update the progressbar msg
     """
-    def __init__(self, task, user_id, cache_time=200):
+    def __init__(self, task, user_id, cache_time=3000):
         self.task_id = task.request.id
         self.task_stat_id = "celery-stat-%s" % self.task_id
+        self.task_msg_all_id = "celery-%s-msg-all" % self.task_id
         self.cache_time = cache_time
-        self.result={'msg':"IN PROGRESS", 'sticky_msg':'', 'err':'', 'progress_percent': 0, 'is_killed':False, 'user_id':user_id}
+        self.result={'msg':"IN PROGRESS", 'sticky_msg':'', 'err':'', 'progress_percent': 0, 'is_killed':False, 'user_id':user_id, 'msg_index':0, }
         self.last_err = ""
+        self.msg = ""
+        cache.set(self.task_msg_all_id, "", self.cache_time)
+
 
         # Normally we want to have created the CeleryTasks object before even the task is run. Reason: if the task is in the queue, we want to know that.
         # In that case these lines are not even run yet! However, we need some delay here before the task is created and the CeleryTasks object created
@@ -92,6 +97,10 @@ class celery_progressbar_stat(object):
         self.celery_task_history_obj.end_date=timezone.now()
         self.celery_task_history_obj.save(update_fields=["status", "end_date"])
 
+        # The cache to remain for another minute
+        cache.replace(self.task_stat_id, self.result, time=60)
+        cache.delete(self.task_msg_all_id)
+
     def get_percent(self):
         return self.result["progress_percent"]
 
@@ -111,7 +120,10 @@ class celery_progressbar_stat(object):
 
     def set_err(self, val):
         self.result["err"] = val
+        val=val+'\n'
+        self.result["msg_index"] += len(val)
         self.set_cache()
+        cache.append(self.task_msg_all_id, val)
 
     def get_sticky_msg(self):
         return self.result["sticky_msg"]
@@ -127,9 +139,9 @@ class celery_progressbar_stat(object):
         self.result["is_killed"] = val
         self.set_cache()
 
-
     def set_cache(self):
-        cache.set(self.task_stat_id, self.result, self.cache_time)
+        cache.set(self.task_stat_id, self.result, time=self.cache_time)
+
 
     def raise_err(self, msg, e=None, obj=None, field=None, fatal=False, sticky_msg=""):
         # msg is what the user sees. e is the actual error that was raised.
@@ -153,8 +165,6 @@ class celery_progressbar_stat(object):
             self.last_err = e
 
         self.msg = msg
-
-
 
         if obj and field:
             current_err_fields = getattr(obj, "err_fields")
@@ -184,7 +194,6 @@ class celery_progressbar_stat(object):
         else:
             logger.info("generics_raiseerr msg: %s, e: %s" % (msg, e) )
 
-        print(msg)
 
 
     def clean_err(self, obj, field, save=True):

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from django.core.cache import cache
+# from django.core.cache import cache
+from generics.cache import cache
 import json
 # from celery.result import AsyncResult
 from django.core.exceptions import PermissionDenied
@@ -18,7 +19,7 @@ from generics.functions import decorator_with_args
 
 import logging
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.WARNING)
 
 #Trying to load celery
 try:
@@ -78,16 +79,17 @@ def task_api(request):
     if request.method == "GET":
         task_id = request.GET.get('id', False)
         terminate = request.GET.get('terminate', False)
+        msg_index_client = request.GET.get('msg_index_client', False)
     elif request.method == "POST":
         task_id = request.POST.get('id', False)
         terminate = request.POST.get('terminate', False)
+        msg_index_client = request.POST.get('msg_index_client', False)
     else:
         task_id = False
         terminate = False
+        msg_index_client = False
 
     if task_id:
-        # job = AsyncResult(task_id)
-        # job.result.state
         task_key = "celery-stat-%s" % task_id
         task_stat = cache.get(task_key)
         try:
@@ -95,6 +97,10 @@ def task_api(request):
                 task_stat = None
         except TypeError:
             task_stat = None
+
+        if task_stat and msg_index_client:
+            task_msg_all_id = "celery-%s-msg-all" % task_id
+            task_stat['msg_chunk'] = cache.get(task_msg_all_id)[msg_index_client:]
     else:
         task_stat = None
 
