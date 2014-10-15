@@ -9,14 +9,16 @@ from django.db.models import FileField
 from django.forms import forms
 from django.template.defaultfilters import filesizeformat
 from django.utils.translation import ugettext_lazy as _
+import imghdr
 
-from south.modelsinspector import add_introspection_rules
+
+# from south.modelsinspector import add_introspection_rules
 
 
 class RestrictedFileField(FileField):
     """
     Same as FileField, but you can specify:
-        * content_types - list containing allowed content_types. Example: ['application/pdf', 'image/jpeg']
+        * content_types - list containing allowed content_types. Example: ['application/pdf', 'image/jpeg', 'text/csv',]
         * max_upload_size - a number indicating the maximum file size allowed for upload.
             2.5MB - 2621440
             5MB - 5242880
@@ -29,12 +31,17 @@ class RestrictedFileField(FileField):
     """
     def __init__(self, *args, **kwargs):
         self.content_types = kwargs.pop("content_types")
+        self.file_extensions = [i.split("/")[1] for i in self.content_types]
         self.max_upload_size = kwargs.pop("max_upload_size")
+        self.image_content_types = ('image/jpeg', 'image/png',)
 
         super(RestrictedFileField, self).__init__(*args, **kwargs)
 
 
-    def clean(self, *args, **kwargs):        
+    def clean(self, *args, **kwargs):
+        import ipdb
+        ipdb.set_trace()
+
         data = super(RestrictedFileField, self).clean(*args, **kwargs)
         
         file = data.file
@@ -43,6 +50,8 @@ class RestrictedFileField(FileField):
             if content_type in self.content_types:
                 if file._size > self.max_upload_size:
                     raise forms.ValidationError(_('Please keep filesize under %s. Current filesize %s') % (filesizeformat(self.max_upload_size), filesizeformat(file._size)))
+                if content_type in self.image_content_types and imghdr.what(None, file) not in self.file_extensions:
+                    raise forms.ValidationError(_('Filetype not supported.'))
             else:
                 raise forms.ValidationError(_('Filetype not supported.'))
         except AttributeError:
@@ -51,13 +60,22 @@ class RestrictedFileField(FileField):
         return data
 
 
-add_introspection_rules([
-    (
-        [RestrictedFileField], # Class(es) these apply to
-        [],         # Positional arguments (not used)
-        {           # Keyword argument
-            "max_upload_size": ["max_upload_size", {}],
-            "content_types": ["content_types", {}],
-        },
-    ),
-], ["^generics\.fields\.RestrictedFileField"])
+    def deconstruct(self):
+        name, path, args, kwargs = super(RestrictedFileField, self).deconstruct()
+        if self.content_types:
+            kwargs['content_types'] = self.content_types
+        if self.max_upload_size:
+            kwargs['max_upload_size'] = self.max_upload_size
+        return name, path, args, kwargs
+
+
+# add_introspection_rules([
+#     (
+#         [RestrictedFileField], # Class(es) these apply to
+#         [],         # Positional arguments (not used)
+#         {           # Keyword argument
+#             "max_upload_size": ["max_upload_size", {}],
+#             "content_types": ["content_types", {}],
+#         },
+#     ),
+# ], ["^generics\.fields\.RestrictedFileField"])
