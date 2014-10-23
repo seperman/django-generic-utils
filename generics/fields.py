@@ -12,9 +12,6 @@ from django.utils.translation import ugettext_lazy as _
 import imghdr
 
 
-# from south.modelsinspector import add_introspection_rules
-
-
 class RestrictedFileField(FileField):
     """
     Same as FileField, but you can specify:
@@ -39,8 +36,6 @@ class RestrictedFileField(FileField):
 
 
     def clean(self, *args, **kwargs):
-        import ipdb
-        ipdb.set_trace()
 
         data = super(RestrictedFileField, self).clean(*args, **kwargs)
         
@@ -50,7 +45,7 @@ class RestrictedFileField(FileField):
             if content_type in self.content_types:
                 if file._size > self.max_upload_size:
                     raise forms.ValidationError(_('Please keep filesize under %s. Current filesize %s') % (filesizeformat(self.max_upload_size), filesizeformat(file._size)))
-                if content_type in self.image_content_types and imghdr.what(None, file) not in self.file_extensions:
+                if content_type in self.image_content_types and imghdr.what(file) not in self.file_extensions:
                     raise forms.ValidationError(_('Filetype not supported.'))
             else:
                 raise forms.ValidationError(_('Filetype not supported.'))
@@ -68,14 +63,3 @@ class RestrictedFileField(FileField):
             kwargs['max_upload_size'] = self.max_upload_size
         return name, path, args, kwargs
 
-
-# add_introspection_rules([
-#     (
-#         [RestrictedFileField], # Class(es) these apply to
-#         [],         # Positional arguments (not used)
-#         {           # Keyword argument
-#             "max_upload_size": ["max_upload_size", {}],
-#             "content_types": ["content_types", {}],
-#         },
-#     ),
-# ], ["^generics\.fields\.RestrictedFileField"])
