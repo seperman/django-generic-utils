@@ -127,10 +127,9 @@ function progress_class(options){
       cache: false,
       data: {id: the_id, terminate: terminate, msg_index_client: msg_index_client}
       } )
-      .done(function(celery_respone, s) {
+      .done(function(celery_respone) {  //?? I changed (celery_respone, s) to (celery_respone)
 
         if (celery_respone !== null) {
-          // console.log(the_id + " :: " + celery_respone.progress_percent + " " + s)
           if (celery_respone.msg !== null && celery_respone.msg !=="") {
             task_name = celery_respone.msg.slice(0,32);
             msg_index_client = celery_respone.msg_index

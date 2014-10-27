@@ -4,7 +4,6 @@ from generics.cache import cache
 import json
 # from celery.result import AsyncResult
 from django.core.exceptions import PermissionDenied
-# from django.http import Http404
 from django.http import HttpResponse
 from django.utils import timezone
 from django.db import IntegrityError
