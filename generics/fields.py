@@ -8,6 +8,12 @@ from django.utils.translation import ugettext_lazy as _
 import imghdr
 
 
+
+import logging
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+
 def filesizeformat(num):
     return "%.2fMB" % (num/(1024*1024))
 
@@ -27,9 +33,10 @@ class RestrictedFileField(FileField):
     """
     def __init__(self, *args, **kwargs):
         self.content_types = kwargs.pop("content_types")
-        self.file_extensions = [i.split("/")[1] for i in self.content_types]
-        self.max_upload_size = kwargs.pop("max_upload_size")
-        self.image_content_types = ('image/jpeg', 'image/png',)
+        self.image_content_types = kwargs.pop("image_content_types", ('image/jpeg', 'image/png',) )
+        self.file_extensions = kwargs.pop("file_extensions", ('jpg','jpeg','png'))
+        self.max_upload_size = kwargs.pop("max_upload_size", 5242880 )
+        self.max_image_upload_size = kwargs.pop("max_image_upload_size", 5242880 )
 
         super(RestrictedFileField, self).__init__(*args, **kwargs)
 
@@ -41,15 +48,21 @@ class RestrictedFileField(FileField):
         file = data.file
         try:
             content_type = file.content_type
+            
             if content_type in self.content_types:
                 if file._size > self.max_upload_size:
-                    raise forms.ValidationError(_('Please keep filesize under %s. Current filesize %s') % (filesizeformat(self.max_upload_size), filesizeformat(file._size)))
+                    raise forms.ValidationError(_('Please keep the filesize under %s. Your file is %s') % (filesizeformat(self.max_upload_size), filesizeformat(file._size)))
+            
+            elif content_type in self.image_content_types:
+                if file._size > self.max_image_upload_size:
+                    raise forms.ValidationError(_('Please keep the filesize under %s. Your file is %s') % (filesizeformat(self.max_upload_size), filesizeformat(file._size)))
+            
                 if content_type in self.image_content_types and imghdr.what(file) not in self.file_extensions:
                     raise forms.ValidationError(_('Filetype not supported.'))
             else:
                 raise forms.ValidationError(_('Filetype not supported.'))
         except AttributeError:
-            pass
+            logger.error("Restricted field error.", exc_info=True)
             
         return data
 
