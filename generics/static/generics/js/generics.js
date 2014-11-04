@@ -70,7 +70,7 @@ function progress_class(options){
   var progressLabel;
   var progressbar_updator;
   var terminate = 0;
-  var jquery_dialog = options.jquery_dialog || "true";
+  var jquery_dialog = options.jquery_dialog || false;
   var previous_err = "";
   var previous_sticky_msg = "";
   var msg_index_client = 0;
