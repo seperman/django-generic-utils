@@ -31,14 +31,21 @@ except ImportError:
 
 
 @decorator_with_args
-def progressbarit(fn, task_key=""):
+def progressbarit(fn, task_key="", only_staff=True):
     @wraps(fn)
     def wrapped(*args, **kwargs):
 
         request = args[0]
 
-        if not request.user.is_authenticated() or not request.user.is_staff:
+        if not request.user.is_authenticated():
             raise PermissionDenied
+
+        if only_staff:
+            if not request.user.is_staff:
+                raise PermissionDenied
+
+        elif not request.user.is_active:
+                raise PermissionDenied
 
         if task_key and CeleryTasks.objects.filter(key=task_key, status__in=["waiting","active"]):
 
@@ -72,7 +79,7 @@ def progressbarit(fn, task_key=""):
 def task_api(request):
     """ A view to report the progress to the user """
 
-    if not request.user.is_authenticated() or not request.user.is_active:
+    if not request.user.is_active:
         raise PermissionDenied
 
     if request.method == "GET":
@@ -124,7 +131,7 @@ def task_api(request):
 def messages_api(request):
     """ A view to akhnowledge messages by users """
 
-    if not request.user.is_authenticated() or not request.user.is_active:
+    if not request.user.is_active:
         raise PermissionDenied
 
     if request.method == "GET":

@@ -51,11 +51,11 @@ class RestrictedFileField(FileField):
             
             if content_type in self.content_types:
                 if file._size > self.max_upload_size:
-                    raise forms.ValidationError(_('Please keep the filesize under %s. Your file is %s') % (filesizeformat(self.max_upload_size), filesizeformat(file._size)))
+                    raise forms.ValidationError(_('Please keep the file size under %s. Your file is %s') % (filesizeformat(self.max_upload_size), filesizeformat(file._size)))
             
             elif content_type in self.image_content_types:
                 if file._size > self.max_image_upload_size:
-                    raise forms.ValidationError(_('Please keep the filesize under %s. Your file is %s') % (filesizeformat(self.max_upload_size), filesizeformat(file._size)))
+                    raise forms.ValidationError(_('Please keep the file size under %s. Your file is %s') % (filesizeformat(self.max_image_upload_size), filesizeformat(file._size)))
             
                 if content_type in self.image_content_types and imghdr.what(file) not in self.file_extensions:
                     raise forms.ValidationError(_('Filetype not supported.'))
