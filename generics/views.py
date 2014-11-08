@@ -160,8 +160,8 @@ def messages_api(request):
 
 
 
-@progressbarit()
-def celery_test(request, only_staff=False):
+@progressbarit(only_staff=False)
+def celery_test(request):
     """ Tests celery and celery progress bar """
 
     # you need to alwasy specify user_id with kwargs and NOT args
