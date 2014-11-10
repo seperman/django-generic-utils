@@ -102,6 +102,7 @@ function progress_class(options){
   var terminate_progressbar = function() {
     clearInterval(progressbar_updator);
     thedialogRef.setClosable(true);
+    $('.cancel-task').remove();
   };
 
 
@@ -205,10 +206,10 @@ function progress_class(options){
         size: BootstrapDialog.SIZE_NORMAL,
         buttons: [{
             id: 'btn-cancel',   
-            icon: 'glyphicon glyphicon-remove',       
+            icon: 'glyphicon glyphicon-off',       
             label: 'Cancel',
-            cssClass: 'btn-warning buttons_classy', 
-            autospin: false,
+            cssClass: 'btn-danger buttons_classy cancel-task', 
+            autospin: true,
             action: function(dialogRef){    
               BootstrapDialog.confirm('Are you sure to terminate the task?', function(result){
                   if(result) {
@@ -216,7 +217,19 @@ function progress_class(options){
                   }
               });
             }
-        }],
+          },
+          {
+            id: 'btn-close',   
+            icon: 'glyphicon glyphicon-minus',       
+            label: 'Close',
+            cssClass: 'btn-warning buttons_classy', 
+            autospin: false,
+            action: function(dialogRef){    
+                dialogRef.close();
+            }
+          }
+
+        ],
         onshown: function(dialogRef){
 
           thedialogRef = dialogRef;

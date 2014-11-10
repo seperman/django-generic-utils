@@ -37,9 +37,6 @@ def progressbarit(fn, task_key="", only_staff=True):
 
         request = args[0]
 
-        if not request.user.is_authenticated():
-            raise PermissionDenied
-
         if only_staff:
             if not request.user.is_staff:
                 raise PermissionDenied
@@ -170,3 +167,27 @@ def celery_test(request):
 
     return job.id
 
+
+
+
+@decorator_with_args
+def logined_json(fn, only_staff=True):
+    @wraps(fn)
+    def wrapped(*args, **kwargs):
+
+        request = args[0]
+
+        if only_staff:
+            if not request.user.is_staff:
+                raise PermissionDenied
+
+        elif not request.user.is_active:
+                raise PermissionDenied
+
+        data = fn(*args, **kwargs)
+
+        json_data = json.dumps(data)
+
+        return HttpResponse(json_data, content_type='application/json')
+
+    return wrapped
