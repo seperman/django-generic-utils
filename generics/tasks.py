@@ -89,9 +89,10 @@ class celery_progressbar_stat(object):
         if exit_type == SystemExit:
             self.celery_task_history_obj.status="killed"
             self.is_killed = True  #killed by error but we still set is_killed to true
-            self.msg = "Terminated by the user."
+            self.sticky_msg =  "%s [Task Terminated]" % self.msg
         elif exit_type:
             self.celery_task_history_obj.status="error"
+            self.sticky_msg =  "%s [Task Terminated]" % self.msg
             self.is_killed = True  #killed by error but we still set is_killed to true
         else:
             self.celery_task_history_obj.status="finished"
@@ -158,6 +159,7 @@ class celery_progressbar_stat(object):
         
         if fatal:
             self.is_killed = True
+            self.msg = msg
             raise SystemExit
             
 
