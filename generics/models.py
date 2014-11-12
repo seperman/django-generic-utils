@@ -52,7 +52,7 @@ class GenericManager(models.Manager):
             elif output == "list_of_dict_due":
                 result = dict(self.filter(**criteria).exclude(**empty_criteria).values_list(*fields))
             else:
-                raise Exception("Only 'list' and 'list_of_dict' as output are supported for multi field input")
+                raise Exception("Only 'list' and 'list_of_dict' and 'list_of_dict_due' as output are supported for multi field input")
 
         
         return result
