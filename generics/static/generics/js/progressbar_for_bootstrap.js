@@ -108,7 +108,7 @@ function progress_class(options){
 
   var progressbar_update = function(msg, percent) {
     progressbar.css('width', percent+'%');
-    progressbar.text( msg +": "+ percent + "%");      
+    progressbarlabel.text( msg +": "+ percent + "%");      
   }
 
 
@@ -175,7 +175,7 @@ function progress_class(options){
     } else {
       waiting_cycle = ++waiting_cycle;
       
-      progressbar.text( task_name +": Waiting " + waiting_cycle);
+      progressbarlabel.text( task_name +": Waiting " + waiting_cycle);
 
       if (waiting_cycle > waiting_for_cycles){
         waiting_cycle_major=++waiting_cycle_major;
@@ -196,8 +196,8 @@ function progress_class(options){
     BootstrapDialog.show({
         title: task_name,
         message: "<div id='footerprogressbar-grp'></div><div id='container-"+the_id+"' class='progress'>\
-            <div class='progress-bar progressbar' role='progressbar' aria-valuenow='0' aria-valuemin='0' aria-valuemax='100' style='width: 0%;'>\
-              IN PROGRESS\
+            <div class='progress-bar progressbar progress-bar-striped active' role='progressbar' aria-valuenow='0' aria-valuemin='0' aria-valuemax='100' style='width: 0%;'>\
+               <span>IN PROGRESS</span>\
             </div>\
       </div>",
         closable: false,
@@ -235,7 +235,8 @@ function progress_class(options){
           thedialogRef = dialogRef;
 
           progressbar = $( the_container+" .progressbar" );
-          progressbar.text( task_name );
+          progressbarlabel = $( the_container+" .progressbar span" );
+          progressbarlabel.text( task_name );
 
 
           progressbar_updator = setInterval(function() { get_task_status(); }, sec);

@@ -51,6 +51,7 @@ class celery_progressbar_stat(object):
         self.result={'msg':"IN PROGRESS", 'sticky_msg':'', 'progress_percent': 0, 'is_killed':False, 'user_id':user_id, 'msg_index':0, }
         self.last_err = ""
         self.last_err_type = None
+        self.fatal = False
 
         self.msg = ""
         cache.set(self.task_msg_all_id, "", self.cache_time)
@@ -85,16 +86,20 @@ class celery_progressbar_stat(object):
 
     def __exit__(self, exit_type, exit_value, traceback):
 
-        # logger.info("!!!Exiting Progress bar. Type: %s  ----  Value: %s" % (exit_type,exit_value) )
         if exit_type == SystemExit:
             self.celery_task_history_obj.status="killed"
             self.is_killed = True  #killed by error but we still set is_killed to true
-            self.msg = "Terminated by the user."
+            self.sticky_msg =  "%s [Task Terminated]" % self.msg
+            logger.error("Task terminated and killed by user or POSSIBLE error: %s, message: %s" % (self.last_err, self.msg), exc_info=True)
+
         elif exit_type:
             self.celery_task_history_obj.status="error"
+            self.sticky_msg =  "%s [Task Terminated]" % self.msg
             self.is_killed = True  #killed by error but we still set is_killed to true
+            logger.error("Task terminated in error: %s, message: %s" % (self.last_err, self.msg), exc_info=True)
         else:
             self.celery_task_history_obj.status="finished"
+
         
         self.celery_task_history_obj.end_date=timezone.now()
         self.celery_task_history_obj.save(update_fields=["status", "end_date"])
@@ -158,6 +163,8 @@ class celery_progressbar_stat(object):
         
         if fatal:
             self.is_killed = True
+            self.msg = msg
+            self.last_err = e.message
             raise SystemExit
             
 
