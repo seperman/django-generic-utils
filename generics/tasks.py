@@ -130,10 +130,10 @@ class celery_progressbar_stat(object):
         val = "<hr class='line-seperator'><p>%s</p>" % val
         self.result["msg_index"] += len(val)
         self.set_cache()
-        logger.warning("val: %s" % val)
+        # logger.warning("val: %s" % val)
         cache.append(self.task_msg_all_id, val)
-        logger.warning("id: %s" % self.task_msg_all_id)
-        logger.warning("msg all from cache: %s" % cache.get(self.task_msg_all_id))
+        # logger.warning("id: %s" % self.task_msg_all_id)
+        # logger.warning("msg all from cache: %s" % cache.get(self.task_msg_all_id))
 
     def get_sticky_msg(self):
         return self.result["sticky_msg"]
