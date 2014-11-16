@@ -254,6 +254,45 @@ def datetime_difference(start_time, end_time):
 
 
 
+def extract_pdf_jpeg(file_content):
+    # Extract jpg's from pdf's. Quick and dirty.
+
+    startmark = "\xff\xd8"
+    startfix = 0
+    endmark = "\xff\xd9"
+    endfix = 2
+    i = 0
+    jpgs = []
+
+    while True:
+        istream = file_content.find("stream", i)
+        if istream < 0:
+            break
+        istart = file_content.find(startmark, istream, istream+20)
+        if istart < 0:
+            i = istream+20
+            continue
+        iend = file_content.find("endstream", istart)
+        if iend < 0:
+            raise Exception("Didn't find end of stream!")
+        iend = file_content.find(endmark, iend-20)
+        if iend < 0:
+            raise Exception("Didn't find end of JPG!")
+         
+        istart += startfix
+        iend += endfix
+        if iend - istart < 50000:  # skipping small images
+            i = iend
+            continue
+
+        jpgs.append(file_content[istart:iend])
+         
+        i = iend
+
+    return jpgs
+
+
+
 if __name__ == "__main__":
     import doctest
     doctest.testmod()
