@@ -13,7 +13,7 @@ logger.setLevel(logging.INFO)
 
 class GenericManager(models.Manager):
     
-    def flat_field_list_filtered(self, fields=None, field=None, criteria={}, output="list"):
+    def flat_field_list_filtered(self, fields=None, field=None, criteria={}, order_by='id', output="list"):
         """"
         Exports a list of a field's values as a list, dictionary or a comma seperated string
         """
@@ -33,7 +33,7 @@ class GenericManager(models.Manager):
 
         # removing empty results
         if only_one_field:
-            result = self.filter(**criteria).exclude(**empty_criteria).values_list(*fields, flat=True)
+            result = self.filter(**criteria).exclude(**empty_criteria).values_list(*fields, flat=True).order_by(order_by)
             if output == "dict":
                 result = dict.fromkeys(result, True)
             elif output == "str":
@@ -46,11 +46,11 @@ class GenericManager(models.Manager):
                 raise Exception("Only 'list', 'dict','str' and 'list_of_strings' as output are supported for single field input")
         else:
             if output == "list":
-                result = self.filter(**criteria).exclude(**empty_criteria).values_list(*fields)
+                result = self.filter(**criteria).exclude(**empty_criteria).order_by(order_by).values_list(*fields)
             elif output == "list_of_dict":
-                result = self.filter(**criteria).exclude(**empty_criteria).values(*fields)
+                result = self.filter(**criteria).exclude(**empty_criteria).order_by(order_by).values(*fields)
             elif output == "list_of_dict_due":
-                result = dict(self.filter(**criteria).exclude(**empty_criteria).values_list(*fields))
+                result = dict(self.filter(**criteria).exclude(**empty_criteria).order_by(order_by).values_list(*fields))
             else:
                 raise Exception("Only 'list' and 'list_of_dict' and 'list_of_dict_due' as output are supported for multi field input")
 
