@@ -165,18 +165,18 @@ def url_exists(url, timeout=10):
 
 
 def wget(the_url, timeout=3):
-    import urllib2 as urllib
-    import socket
+    import requests
     import io
-    
     try:
-        fd = urllib.urlopen(the_url, timeout=timeout)
-        return io.BytesIO(fd.read())
-    except socket.timeout:
-        logger.error("Timeout in getting %s" % the_url)
+        logger.info("Getting: %s" % the_url)
+        fd = requests.get(the_url, timeout=timeout)
+        fd.raise_for_status()
+        return io.BytesIO(fd.content)
+    except requests.exceptions.Timeout:
+        logger.error("%s Timeout" % the_url)
         return False
-    except urllib.HTTPError as e:
-        logger.error("Error in getting %s due to: %s" % (the_url, e))
+    except Exception as e:
+        logger.error("%s: %s" % (e, the_url))
         return False
 
 
