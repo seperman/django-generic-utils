@@ -1,20 +1,17 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 # from __future__ import print_function, division
-import urllib2 as urllib
-import io
 
-
-"""
-Some generic functions
-"""
 
 from django.core.urlresolvers import reverse
 from django.core.cache import cache
-import httplib
-from urlparse import urlparse
 
-# import datetime
+import logging
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)  # This will be overwritten by Supervisord configs for celery
+
+
+
 
 def get_or_none(model, **kwargs):
     try:
@@ -147,6 +144,9 @@ def url_exists(url, timeout=10):
     url_exists(url)
     True
     """
+    from urlparse import urlparse
+    import httplib
+
     o = urlparse(url)
     #
     if o.scheme=="http":
@@ -164,11 +164,19 @@ def url_exists(url, timeout=10):
 
 
 
-def wget(the_url):
+def wget(the_url, timeout=3):
+    import urllib2 as urllib
+    import socket
+    import io
+    
     try:
-        fd = urllib.urlopen(the_url)
+        fd = urllib.urlopen(the_url, timeout=timeout)
         return io.BytesIO(fd.read())
-    except urllib.HTTPError:
+    except socket.timeout:
+        logger.error("Timeout in getting %s" % the_url)
+        return False
+    except urllib.HTTPError as e:
+        logger.error("Error in getting %s due to: %s" % (the_url, e))
         return False
 
 
