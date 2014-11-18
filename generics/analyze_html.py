@@ -10,18 +10,50 @@ class Analyze_HTML(object):
     """
     Analyzes HTML
     requires LXML
+
+    Examples
+    --------
+
+    Simple
+from generics.analyze_html import Analyze_HTML
+import re
+
+HTML='<body>\
+<span style="text-decoration: underline;">\
+    <p>hehe</p>\
+    <div style="chos">Alo</div>\
+    <span>HAHA!</span>\
+</span>\
+</body>'
+
+
+aa = Analyze_HTML(HTML)
+pattern1 = re.compile(r'(text-decoration: underline;)|(line-height: 16px; font-size: 11px;)')
+
+infected_elements = aa.find_tag_with_attr_that_matches(tag='span', attr='style', the_match=pattern1)
+
+for el in infected_elements:
+    aa.remove_element_keep_children(el)
+
+print aa
+
     """
     
-    def __init__(self):
-        
+    def __init__(self, HTML):
         self.match_comments = re.compile(r'(<!--.*-->)')
-
-
-    def set_html(self, HTML):
         self.soup = BeautifulSoup(HTML, "lxml")
     
     def get_html(self):
         return self.soup.encode(formatter=None).decode('utf-8')
+
+    def __unicode__(self):
+        return str(self.get_html())
+
+    def __str__(self):
+        return str(self.get_html())
+
+    def __repr__(self):
+        return str(self.get_html())
 
     def extract_text_from_soup(self):
         self.texts = self.soup.findAll(text=True)
@@ -48,8 +80,15 @@ class Analyze_HTML(object):
 
         """
         elements = self.find_tag(tag)
-        return [el for el in elements if the_match.match(el[attr])]
+        found = []
+        for el in elements:
+            try:
+                if the_match.match(el[attr]):
+                    found.append(el)
+            except:
+                pass
 
+        return found
 
     def find_img_sources_in_img_elements(self, elements):        
         return [el['src'] for el in elements]
@@ -96,10 +135,29 @@ class Analyze_HTML(object):
                 element.replace_with(replacement)
                 result = True
             except:
-                logger.error("caught:", exc_info=True)
-                pass
-        
+                logger.error("Failed to replace:", exc_info=True)
+                print ("Failed to replace")
         return result
     
+
+    def remove_element_keep_children(self, element):
+        """
+        replaces the element with its children
+        Make sure you again set_html after replacing elements throught the HTML since once you replace an element,
+        you can't replace it again unless you parse the html again.
+        Count: maximum number of times an item will be replaced. 0 means unlimited.
+        """
+        result=False
+        
+        try:
+            element.unwrap() #replace_with(element.children)
+            result = True
+        except:
+            logger.error("Failed to replace:", exc_info=True)
+
+        return result
+    
+
+
 
 

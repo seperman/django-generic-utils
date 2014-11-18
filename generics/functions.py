@@ -2,9 +2,9 @@
 from __future__ import print_function
 # from __future__ import print_function, division
 
-
 from django.core.urlresolvers import reverse
 from django.core.cache import cache
+
 
 import logging
 logger = logging.getLogger(__name__)

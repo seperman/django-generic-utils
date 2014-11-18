@@ -3,9 +3,11 @@ from __future__ import division
 
 from django.db.models import FileField
 from django.forms import forms
-# from django.template.defaultfilters import filesizeformat
 from django.utils.translation import ugettext_lazy as _
+
+
 import imghdr
+
 
 
 
