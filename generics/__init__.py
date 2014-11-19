@@ -1,4 +1,3 @@
-from .analyze_html import Analyze_HTML
 from .fields import RestrictedFileField
 from .functions import *
 from .models import *
