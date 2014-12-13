@@ -272,6 +272,7 @@ class celery_progressbar_stat_dummy(celery_progressbar_stat):
         pass
 
     def raise_err(self, msg, e=None, obj=None, field=None, fatal=False, sticky_msg=""):
+        print (msg)
         import ipdb
         ipdb.set_trace()
         logger.error("generics_raiseerr msg: %s, e: %s" % (msg, e) )
