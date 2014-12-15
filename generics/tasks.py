@@ -272,8 +272,15 @@ class celery_progressbar_stat_dummy(celery_progressbar_stat):
         pass
 
     def raise_err(self, msg, e=None, obj=None, field=None, fatal=False, sticky_msg=""):
-        logger.error("generics_raiseerr msg: %s, e: %s" % (msg, e) , exc_info=True )
-        print ('\n%s' % msg)
+        import sys
+        import traceback
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+
+        print ("Latest exception:")
+        traceback.print_exception(exc_type, exc_value, exc_traceback, limit=5, file=sys.stdout)
+        
+        print ('\nCelery Task raised message:%s' % msg)
+
         import ipdb
         ipdb.set_trace()
 
