@@ -145,7 +145,9 @@ class celery_progressbar_stat(object):
         self.result["sticky_msg"] = val
         self.set_cache()
 
+    # We actually inquire from the cache instead of the object. Reason: A view might have updated this variable in cache
     def get_is_killed(self):
+        self.result = cache.get(self.task_stat_id)
         return self.result["is_killed"]
 
     def set_is_killed(self, val):
