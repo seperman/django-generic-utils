@@ -292,6 +292,10 @@ def test_progressbar(user_id=1):
         c_stat.msg = "Tesing"
 
         for i in range(0, 101):
+
+            if c_stat.is_killed:
+                c_stat.raise_err("Terminating task", e="test_err3", fatal=True)
+
             sleep(.3)
             if i == 6:
                 logger.info("test progress bar at 6%")
