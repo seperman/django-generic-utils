@@ -7,27 +7,22 @@ from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse
 from django.utils import timezone
 from django.db import IntegrityError
-from functools import wraps    #deals with decorats shpinx documentation
+from functools import wraps    # deals with decorats shpinx documentation
 
 from generics import tasks
 from generics.models import CeleryTasks, MessagesStatus
 from generics.functions import decorator_with_args
 
-
-
-
 import logging
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-#Trying to load celery
-try:
-    from celery.task.control import revoke
-except ImportError:
-    def revoke(*args, **kwargs):
-        return None
-
-
+# Trying to load celery
+# try:
+#     from celery.task.control import revoke
+# except ImportError:
+#     def revoke(*args, **kwargs):
+#         return None
 
 
 @decorator_with_args
@@ -44,7 +39,7 @@ def progressbarit(fn, task_key="", only_staff=True):
         elif not request.user.is_active:
                 raise PermissionDenied
 
-        if task_key and CeleryTasks.objects.filter(key=task_key, status__in=["waiting","active"]):
+        if task_key and CeleryTasks.objects.filter(key=task_key, status__in=["waiting", "active"]):
 
             json_data = json.dumps("Error: %s Task is already running" % task_key)
             return HttpResponse(json_data, content_type='application/json')
@@ -53,7 +48,7 @@ def progressbarit(fn, task_key="", only_staff=True):
             task_id = fn(*args, **kwargs)
         except:
             json_data = json.dumps("Error: %s Task failed to run" % task_key)
-            return HttpResponse(json_data, content_type='application/json')            
+            return HttpResponse(json_data, content_type='application/json')
 
         try:
             CeleryTasks.objects.create(task_id=task_id, user=request.user, key=task_key)
@@ -68,9 +63,6 @@ def progressbarit(fn, task_key="", only_staff=True):
         return HttpResponse(json_data, content_type='application/json')
 
     return wrapped
-
-
-
 
 
 def task_api(request):
@@ -114,15 +106,12 @@ def task_api(request):
     else:
         task_stat = None
 
-    if task_stat and terminate=="1":
-        revoke(task_id, terminate=True)
+    if task_stat and terminate == "1":
         task_stat["is_killed"] = True
         task_stat["msg"] = "Terminated by user"
         cache.set(task_id, task_stat, 2)
 
-
     return HttpResponse(json.dumps(task_stat), content_type='application/json')
-
 
 
 def messages_api(request):
@@ -143,18 +132,14 @@ def messages_api(request):
     result = None
 
     if message_id and action:
-        if action=="remove":
+        if action == "remove":
             result = MessagesStatus.objects.filter(message__pk=message_id, user=request.user).update(akhnowledge_date=timezone.now())
-                # m.users.remove(request.user)
-                # result = "Removed"
+            # m.users.remove(request.user)
+            # result = "Removed"
             # except MessagesStatus.DoesNotExist:
             #     raise Http404
 
     return HttpResponse(json.dumps(result), content_type='application/json')
-
-
-
-
 
 
 @progressbarit(only_staff=False)
@@ -162,12 +147,10 @@ def celery_test(request):
     """ Tests celery and celery progress bar """
 
     # you need to alwasy specify user_id with kwargs and NOT args
-    
+
     job = tasks.test_progressbar.delay(user_id=request.user.id)
 
     return job.id
-
-
 
 
 @decorator_with_args
