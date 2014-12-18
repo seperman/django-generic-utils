@@ -109,7 +109,7 @@ def task_api(request):
     if task_stat and terminate == "1":
         task_stat["is_killed"] = True
         task_stat["msg"] = "Terminated by user"
-        cache.set(task_id, task_stat, 2)
+        cache.set(task_id, task_stat, 60 * 5)
 
     return HttpResponse(json.dumps(task_stat), content_type='application/json')
 

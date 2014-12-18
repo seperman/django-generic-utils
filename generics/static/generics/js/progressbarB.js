@@ -1,3 +1,10 @@
+/*jshint multistr: true */
+/*
+Written by Erasmose 2014
+www.ZepWorks.com
+MIT Licence
+*/
+
 
 (function(){
     var cookies;
@@ -53,13 +60,14 @@ function progress_class(options){
   var sec = options.sec*1000 || 5000;
   var waiting = false;
   var waiting_for_cycles = options.waiting_for_cycles || 4;
-  var waiting_for_cycles_major = options.waiting_for_cycles || 5;  // waiting_for_cycles*waiting_for_cycles_major*sec = TIMEOUT time 
+  var waiting_for_cycles_major = options.waiting_for_cycles || 5;  // waiting_for_cycles*waiting_for_cycles_major*sec = TIMEOUT time
   var waiting_cycle = 0;
   var waiting_cycle_major = 0;
   var err_count = 0;
   var the_id = options.the_id || null;
   var the_container;
   var progressbar;
+  var progressLabel;
   var progressbar_updator;
   var terminate = 0;
   var jquery_dialog = options.jquery_dialog || false;
@@ -68,6 +76,7 @@ function progress_class(options){
   var msg_index_client = 0;
   var previous_msg_index_client = 0;
   var thedialogRef = null;
+  var modeB = options.modeB || true;
 
 
   var run_task = function() {
@@ -101,19 +110,28 @@ function progress_class(options){
 
   var terminate_progressbar = function() {
     clearInterval(progressbar_updator);
-    thedialogRef.setClosable(true);
-    $('.cancel-task').remove();
+    if (modeB){
+      thedialogRef.setClosable(true);
+      $('.cancel-task').remove();
+    } else {
+      setTimeout( function(){progressbar.parent().parent().remove();} , 100 );
+    }
   };
 
 
   var progressbar_update = function(msg, percent) {
     progressbar.css('width', percent+'%');
-    progressbarlabel.text( msg +": "+ percent + "%");      
+    progressbarlabel.text( msg +": "+ percent + "%");
   }
 
 
   var get_task_status = function() {
 
+    if (!modeB){
+      function progress(msg) {
+        progressbar.progressbar( "value", msg );
+      }
+    }
 
     if (waiting===false){
       waiting = true;
@@ -130,7 +148,11 @@ function progress_class(options){
           if (celery_respone.msg !== null && celery_respone.msg !=="") {
             task_name = celery_respone.msg.slice(0,32);
             msg_index_client = celery_respone.msg_index
-            progressbar_update(task_name, celery_respone.progress_percent);
+            if (modeB){
+              progressbar_update(task_name, celery_respone.progress_percent);
+            } else {
+              progress(celery_respone.progress_percent)
+            }
           }
 
           // checking to see if the msg starts with error:
@@ -170,12 +192,16 @@ function progress_class(options){
           waiting = false;
         }
       });
-      
+
       //waiting is True
     } else {
       waiting_cycle = ++waiting_cycle;
-      
-      progressbarlabel.text( task_name +": Waiting " + waiting_cycle);
+
+      if (modeB){
+        progressbarlabel.text( task_name +": Waiting " + waiting_cycle);
+      } else {
+        progressLabel.text( task_name +": Waiting " + waiting_cycle);
+      }
 
       if (waiting_cycle > waiting_for_cycles){
         waiting_cycle_major=++waiting_cycle_major;
@@ -193,57 +219,114 @@ function progress_class(options){
 
   var make_progress_bar = function() {
 
-    BootstrapDialog.show({
-        title: task_name,
-        message: "<div id='footerprogressbar-grp'></div><div id='container-"+the_id+"' class='progress'>\
-            <div class='progress-bar progressbar progress-bar-striped active' role='progressbar' aria-valuenow='0' aria-valuemin='0' aria-valuemax='100' style='width: 0%;'>\
-               <span>IN PROGRESS</span>\
-            </div>\
-      </div>",
-        closable: false,
-        closeByBackdrop: false,
-        closeByKeyboard: false,
-        size: BootstrapDialog.SIZE_NORMAL,
-        buttons: [{
-            id: 'btn-cancel',   
-            icon: 'glyphicon glyphicon-off',       
-            label: 'Cancel',
-            cssClass: 'btn-danger buttons_classy cancel-task', 
-            autospin: true,
-            action: function(dialogRef){    
-              BootstrapDialog.confirm('Are you sure to terminate the task?', function(result){
-                  if(result) {
-                      terminate = 1;
-                  }
-              });
+    if (modeB){
+      BootstrapDialog.show({
+          title: task_name,
+          message: "<div id='footerprogressbar-grp'></div><div id='container-"+the_id+"' class='progress'>\
+              <div class='progress-bar progressbar progress-bar-striped active' role='progressbar' aria-valuenow='0' aria-valuemin='0' aria-valuemax='100' style='width: 0%;'>\
+                 <span>IN PROGRESS</span>\
+              </div>\
+        </div>",
+          closable: false,
+          closeByBackdrop: false,
+          closeByKeyboard: false,
+          size: BootstrapDialog.SIZE_NORMAL,
+          buttons: [{
+              id: 'btn-cancel',
+              icon: 'glyphicon glyphicon-off',
+              label: 'Cancel',
+              cssClass: 'btn-danger buttons_classy cancel-task',
+              autospin: true,
+              action: function(dialogRef){
+                BootstrapDialog.confirm('Are you sure to terminate the task?', function(result){
+                    if(result) {
+                        terminate = 1;
+                    }
+                });
+              }
+            },
+            {
+              id: 'btn-close',
+              icon: 'glyphicon glyphicon-minus',
+              label: 'Close',
+              cssClass: 'btn-warning buttons_classy',
+              autospin: false,
+              action: function(dialogRef){
+                  dialogRef.close();
+              }
             }
-          },
-          {
-            id: 'btn-close',   
-            icon: 'glyphicon glyphicon-minus',       
-            label: 'Close',
-            cssClass: 'btn-warning buttons_classy', 
-            autospin: false,
-            action: function(dialogRef){    
-                dialogRef.close();
-            }
+
+          ],
+          onshown: function(dialogRef){
+
+            thedialogRef = dialogRef;
+
+            progressbar = $( the_container+" .progressbar" );
+            progressbarlabel = $( the_container+" .progressbar span" );
+            progressbarlabel.text( task_name );
+
+
+            progressbar_updator = setInterval(function() { get_task_status(); }, sec);
+
+
           }
+      });
 
-        ],
-        onshown: function(dialogRef){
+    } else {
 
-          thedialogRef = dialogRef;
+      $("#progressbar-container").append("<div id='container-"+the_id+"'>\
+          <div style='display: inline-block;'>\
+            <div id='progressbar'>\
+              <div class='progress-label'></div>\
+            </div>\
+          </div>\
+          <div style='display: inline-block;'>\
+            <button type='button' class='cancel-task'>X</button>\
+          </div>\
+        </div>");
 
-          progressbar = $( the_container+" .progressbar" );
-          progressbarlabel = $( the_container+" .progressbar span" );
-          progressbarlabel.text( task_name );
 
-
-          progressbar_updator = setInterval(function() { get_task_status(); }, sec);
-
-
+      $(the_container+' .cancel-task').click(function(){
+          dialog_delete_task_simple();
         }
-    });    
+      ).button({ icons: { primary: "ui-icon-circle-close" }, text: false });
+
+
+      progressbar = $( the_container+" #progressbar" );
+      progressLabel = $( the_container+" .progress-label" );
+      progressLabel.text( task_name );
+
+      $(function() {
+
+        progressbar.progressbar({
+          value: false,
+          change: function() {
+            progressLabel.text( task_name +" "+ progressbar.progressbar( "value" ) + "%" );
+          },
+          complete: function() {
+            $("#footerprogressbar-grp").prepend('<div id="task_finished">');
+            $('#task_finished')
+              .append('<input type="button" value="' + original_task_name + ' finished.">')
+              .button()
+              .click(function(){ window.location.reload(1);});
+          }
+        });
+
+      });
+
+      progressbar_updator = setInterval(function() { get_task_status(); }, sec);
+
+
+      var dialog_delete_task_simple = function()
+        {
+          var r=confirm("Are you sure to terminate the task?");
+          if (r===true)
+            {
+              terminate = 1;
+            }
+        };
+
+    }
 
   };
 
