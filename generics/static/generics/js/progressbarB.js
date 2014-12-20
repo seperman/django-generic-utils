@@ -51,6 +51,7 @@ $.ajaxSetup({
 // Celery Progress Bar
 //-------------------------------------------------------------------------------
 
+var progressbar_modeB = true;  //progressbar_modeB enabled means bootstrap mode
 
 function progress_class(options){
 
@@ -76,7 +77,6 @@ function progress_class(options){
   var msg_index_client = 0;
   var previous_msg_index_client = 0;
   var thedialogRef = null;
-  var modeB = options.modeB || true;
 
 
   var run_task = function() {
@@ -110,7 +110,7 @@ function progress_class(options){
 
   var terminate_progressbar = function() {
     clearInterval(progressbar_updator);
-    if (modeB){
+    if (progressbar_modeB){
       thedialogRef.setClosable(true);
       $('.cancel-task').remove();
     } else {
@@ -127,7 +127,7 @@ function progress_class(options){
 
   var get_task_status = function() {
 
-    if (!modeB){
+    if (!progressbar_modeB){
       function progress(msg) {
         progressbar.progressbar( "value", msg );
       }
@@ -148,7 +148,7 @@ function progress_class(options){
           if (celery_respone.msg !== null && celery_respone.msg !=="") {
             task_name = celery_respone.msg.slice(0,32);
             msg_index_client = celery_respone.msg_index
-            if (modeB){
+            if (progressbar_modeB){
               progressbar_update(task_name, celery_respone.progress_percent);
             } else {
               progress(celery_respone.progress_percent)
@@ -197,7 +197,7 @@ function progress_class(options){
     } else {
       waiting_cycle = ++waiting_cycle;
 
-      if (modeB){
+      if (progressbar_modeB){
         progressbarlabel.text( task_name +": Waiting " + waiting_cycle);
       } else {
         progressLabel.text( task_name +": Waiting " + waiting_cycle);
@@ -219,7 +219,7 @@ function progress_class(options){
 
   var make_progress_bar = function() {
 
-    if (modeB){
+    if (progressbar_modeB){
       BootstrapDialog.show({
           title: task_name,
           message: "<div id='footerprogressbar-grp'></div><div id='container-"+the_id+"' class='progress'>\
