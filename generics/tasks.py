@@ -42,12 +42,16 @@ class celery_progressbar_stat(object):
 
         c.msg="FINISHED"
 
-        This will automatically update the progressbar msg
+        This will automatically update the progressbar msg.
+
+        During setting percentage and during reporting, we check to see if is_killed flag is set in the cache.
+        In that case, we terminate the task.
     """
 
     def __init__(self, task, user_id, cache_time=3000):
         self.task_id = task.request.id
         self.task_stat_id = "celery-stat-%s" % self.task_id
+        self.task_kill_id = "celery-kill-%s" % self.task_id
         self.task_msg_all_id = "celery-%s-msg-all" % self.task_id
         self.cache_time = cache_time
         self.result = {'msg': "IN PROGRESS", 'sticky_msg': '', 'progress_percent': 0, 'is_killed': False,
@@ -115,6 +119,9 @@ class celery_progressbar_stat(object):
         return self.result["progress_percent"]
 
     def set_percent(self, val):
+        if self.kill:
+            raise SystemExit
+
         self.result["progress_percent"] = val
         self.set_cache()
 
@@ -133,10 +140,7 @@ class celery_progressbar_stat(object):
         val = "<hr class='line-seperator'><p>%s</p>" % val
         self.result["msg_index"] += len(val)
         self.set_cache()
-        # logger.warning("val: %s" % val)
         cache.append(self.task_msg_all_id, val)
-        # logger.warning("id: %s" % self.task_msg_all_id)
-        # logger.warning("msg all from cache: %s" % cache.get(self.task_msg_all_id))
 
     def get_sticky_msg(self):
         return self.result["sticky_msg"]
@@ -145,14 +149,18 @@ class celery_progressbar_stat(object):
         self.result["sticky_msg"] = val
         self.set_cache()
 
-    # We actually inquire from the cache instead of the object. Reason: A view might have updated this variable in cache
     def get_is_killed(self):
-        self.result = cache.get(self.task_stat_id)
         return self.result["is_killed"]
 
     def set_is_killed(self, val):
         self.result["is_killed"] = val
         self.set_cache()
+
+    def get_kill(self):
+        return cache.get(self.task_kill_id)
+
+    def set_kill(self, val):
+        cache.set(self.task_kill_id, True, 60 * 5)
 
     def set_cache(self):
         cache.set(self.task_stat_id, self.result, time=self.cache_time)
@@ -165,8 +173,7 @@ class celery_progressbar_stat(object):
         if sticky_msg:
             self.sticky_msg = sticky_msg
 
-        if fatal:
-            self.is_killed = True
+        if fatal or self.kill:
             self.msg = msg
             self.last_err = e.message
             raise SystemExit
@@ -246,6 +253,7 @@ class celery_progressbar_stat(object):
     err = property(get_err, set_err,)
     sticky_msg = property(get_sticky_msg, set_sticky_msg,)
     is_killed = property(get_is_killed, set_is_killed,)
+    kill = property(get_kill, set_kill,)
 
 
 class celery_progressbar_stat_dummy(celery_progressbar_stat):

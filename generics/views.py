@@ -54,6 +54,7 @@ def progressbarit(fn, task_key="", only_staff=True):
             CeleryTasks.objects.create(task_id=task_id, user=request.user, key=task_key)
         except IntegrityError:
             # We don't want to have 2 tasks with the same ID
+            logger.critical("There ware 2 tasks with the same ID. Trying to terminate the task.", exc_info=True)
             from celery.task.control import revoke
             revoke(task_id, terminate=True)
             raise
@@ -107,9 +108,7 @@ def task_api(request):
         task_stat = None
 
     if task_stat and terminate == "1":
-        task_stat["is_killed"] = True
-        task_stat["msg"] = "Terminated by user"
-        cache.set(task_id, task_stat, 60 * 5)
+        cache.set("celery-kill-%s" % task_id, True, 60 * 5)
 
     return HttpResponse(json.dumps(task_stat), content_type='application/json')
 
