@@ -157,7 +157,7 @@ class celery_progressbar_stat(object):
     def set_cache(self):
         cache.set(self.task_stat_id, self.result, time=self.cache_time)
 
-    def raise_err(self, msg, e=None, obj=None, field=None, fatal=False, sticky_msg=""):
+    def report(self, msg, e=None, obj=None, field=None, fatal=False, sticky_msg=""):
         # msg is what the user sees. e is the actual error that was raised.
         # We check to see if an error is not already caught. Since we don't want to re-raise the same error up.
         # However you have to raise the error yourself in your code. e is basically Exception as e
@@ -271,7 +271,7 @@ class celery_progressbar_stat_dummy(celery_progressbar_stat):
     def set_cache(self):
         pass
 
-    def raise_err(self, msg, e=None, obj=None, field=None, fatal=False, sticky_msg=""):
+    def report(self, msg, e=None, obj=None, field=None, fatal=False, sticky_msg=""):
         import sys
         import traceback
         exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -296,20 +296,20 @@ def test_progressbar(user_id=1):
         for i in range(0, 101):
 
             if c_stat.is_killed:
-                c_stat.raise_err("Terminating task", e="test_err3", fatal=True)
+                c_stat.report("Terminating task", e="test_err3", fatal=True)
 
             sleep(.3)
             if i == 6:
                 logger.info("test progress bar at 6%")
-                c_stat.raise_err("Error: This error should show up", e="test_err",
+                c_stat.report("Error: This error should show up", e="test_err",
                                  sticky_msg=mark_safe("<p>TEST STICKY ERROR.</p><img src='https://cdn0.iconfinder.com/data/icons/cosmo-medicine/40/test-tube_2-128.png'>"))
 
             if i == 16:
                 logger.info("test progress bar at 16%")
-                c_stat.raise_err("Error again: This error should show up too", e="test_err2")
+                c_stat.report("Error again: This error should show up too", e="test_err2")
 
             if i == 22:
                 logger.info("test progress bar at 22%")
-                c_stat.raise_err("Error: This error should show NOT up since it is raised before", e="test_err2")
+                c_stat.report("Error: This error should show NOT up since it is raised before", e="test_err2")
 
             c_stat.percent = i
