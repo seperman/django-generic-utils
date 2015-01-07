@@ -31,6 +31,7 @@ logger.setLevel(logging.INFO)
 
 
 class celery_progressbar_stat(object):
+
     """ updates the progress bar info for the task.
 
         Example usage:
@@ -159,13 +160,13 @@ class celery_progressbar_stat(object):
     def get_kill(self):
         return cache.get(self.task_kill_id)
 
-    def set_kill(self, val):
-        cache.set(self.task_kill_id, True, 60 * 5)
+    # def set_kill(self, val):
+    #     cache.set(self.task_kill_id, True, 60 * 5)
 
     def set_cache(self):
         cache.set(self.task_stat_id, self.result, time=self.cache_time)
 
-    def report(self, msg, e=None, obj=None, field=None, fatal=False, sticky_msg=""):
+    def report(self, msg, e=None, obj=None, field=None, fatal=False, sticky_msg="", log_level="info"):
         # msg is what the user sees. e is the actual error that was raised.
         # We check to see if an error is not already caught. Since we don't want to re-raise the same error up.
         # However you have to raise the error yourself in your code. e is basically Exception as e
@@ -205,14 +206,11 @@ class celery_progressbar_stat(object):
                 except:
                     self.msg = "Unable to set object's error fields. The model is not properly set up."
 
-        if msg[:3].lower() == "err":
-            logger.error("generics_raiseerr msg: %s, e: %s" % (msg, e) )
+        if msg[:3].lower() == "err" or msg[:3].lower() == "war":
             self.err = msg
-        elif msg[:4].lower() == "warn":
-            logger.warning("generics_raiseerr msg: %s, e: %s" % (msg, e) )
-            self.err = msg
-        else:
-            logger.info("generics_raiseerr msg: %s, e: %s" % (msg, e) )
+
+        log_level = log_level.lower()
+        getattr(logger, log_level)("generics_raiseerr msg: %s, e: %s" % (msg, e))
 
     def clean_err(self, obj, field, save=True):
         """
@@ -253,10 +251,11 @@ class celery_progressbar_stat(object):
     err = property(get_err, set_err,)
     sticky_msg = property(get_sticky_msg, set_sticky_msg,)
     is_killed = property(get_is_killed, set_is_killed,)
-    kill = property(get_kill, set_kill,)
+    kill = property(get_kill, )
 
 
 class celery_progressbar_stat_dummy(celery_progressbar_stat):
+
     """ does not update the progress bar info for the task.
         it is used when testing the task from the command line
     """
@@ -284,10 +283,10 @@ class celery_progressbar_stat_dummy(celery_progressbar_stat):
         import traceback
         exc_type, exc_value, exc_traceback = sys.exc_info()
 
-        print ("Latest exception:")
+        print("Latest exception:")
         traceback.print_exception(exc_type, exc_value, exc_traceback, limit=5, file=sys.stdout)
 
-        print ('\nCelery Task raised message:%s' % msg)
+        print('\nCelery Task raised message:%s' % msg)
 
         import ipdb
         ipdb.set_trace()
@@ -310,7 +309,7 @@ def test_progressbar(user_id=1):
             if i == 6:
                 logger.info("test progress bar at 6%")
                 c_stat.report("Error: This error should show up", e="test_err",
-                                 sticky_msg=mark_safe("<p>TEST STICKY ERROR.</p><img src='https://cdn0.iconfinder.com/data/icons/cosmo-medicine/40/test-tube_2-128.png'>"))
+                              sticky_msg=mark_safe("<p>TEST STICKY ERROR.</p><img src='https://cdn0.iconfinder.com/data/icons/cosmo-medicine/40/test-tube_2-128.png'>"))
 
             if i == 16:
                 logger.info("test progress bar at 16%")
