@@ -266,8 +266,10 @@ class celery_progressbar_stat_dummy(celery_progressbar_stat):
         self.last_err = ""
         self.task_id = "test id"
         self.task_msg_all_id = "celery-%s-msg-all" % self.task_id
+        self.task_kill_id = "celery-kill-%s" % self.task_id
         self.task_stat_id = "celery-stat-%s" % self.task_id
         self.last_err_type = None
+        self.fatal = False
 
     def __enter__(self):
         return self
