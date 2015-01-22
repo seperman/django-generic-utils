@@ -68,7 +68,7 @@ def serial_func(key, time=3600, func=lambda: None, kwargs={}):
     if cache.get(key):
         print("This function is already running")
     else:
-        #setting a key that cache is running
+        # setting a key that cache is running
         cache.set(key, True, time)
         try:
             result = func(**kwargs)
@@ -90,7 +90,7 @@ def serial_block_begin(key, time=120):
         print("This function is already running")
         return True
     else:
-        #setting a key that cache is running
+        # setting a key that cache is running
         cache.set(key, True, time)
         return False
 
@@ -145,7 +145,8 @@ def url_exists(url, timeout=10):
         else:
             result = response.status
     else:
-        raise Exception("%s protocol is not implemented yet in Django Generic Utils" % o.scheme)
+        raise Exception(
+            "%s protocol is not implemented yet in Django Generic Utils" % o.scheme)
     return result
 
 
@@ -153,7 +154,8 @@ def wget(the_url, timeout=3):
 
     import logging
     logger = logging.getLogger(__name__)
-    logger.setLevel(logging.INFO)  # This will be overwritten by Supervisord configs for celery
+    # This will be overwritten by Supervisord configs for celery
+    logger.setLevel(logging.INFO)
 
     import requests
     import io
@@ -230,7 +232,7 @@ def datetime_difference(start_time, end_time):
     mn = temp2[1]
     sec = temp1[1]
 
-    #Adding 0 so it shows 01 instead of 0
+    # Adding 0 so it shows 01 instead of 0
     if hr < 10:
         hr = "0%s" % hr
 
@@ -279,6 +281,51 @@ def extract_pdf_jpeg(file_content):
         i = iend
 
     return jpgs
+
+
+def convert_pdf_to_img(blob, img_type="jpg", quality=75):
+    """
+    Converts PDF with multiple pages into one image.
+    It needs the file content NOT the filename or ioBytes and returns the image content.
+    Note: It has memory leak!!
+    http://stackoverflow.com/a/26233785/1497443
+
+    Example:
+
+    with open('my.pdf', "r") as f:
+        file_content = f.read()
+
+    # import ipdb
+    # ipdb.set_trace()
+    hh = convert_pdf_to_jpg(file_content)
+
+    with open('my.jpg', 'wb') as f:
+        f.write(hh)
+    """
+    from wand.image import Image as WandImage
+    from wand.color import Color as WandColor
+
+    pdf = WandImage(blob=blob, resolution=200)
+
+    pages = len(pdf.sequence)
+
+    wimage = WandImage(
+        width=pdf.width,
+        height=pdf.height * pages,
+        background=WandColor("white")
+    )
+
+    for i in xrange(pages):
+        wimage.composite(
+            pdf.sequence[i],
+            top=pdf.height * i,
+            left=0
+        )
+
+    if img_type == "jpg":
+        wimage.compression_quality = quality
+
+    return wimage.make_blob(img_type)
 
 
 if __name__ == "__main__":
