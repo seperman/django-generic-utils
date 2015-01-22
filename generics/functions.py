@@ -283,7 +283,7 @@ def extract_pdf_jpeg(file_content):
     return jpgs
 
 
-def convert_pdf_to_img(blob, img_type="jpg", quality=75):
+def convert_pdf_to_img(blob, img_type="jpg", quality=75, resolution=200):
     """
     Converts PDF with multiple pages into one image.
     It needs the file content NOT the filename or ioBytes and returns the image content.
@@ -305,7 +305,7 @@ def convert_pdf_to_img(blob, img_type="jpg", quality=75):
     from wand.image import Image as WandImage
     from wand.color import Color as WandColor
 
-    pdf = WandImage(blob=blob, resolution=200)
+    pdf = WandImage(blob=blob, resolution=resolution)
 
     pages = len(pdf.sequence)
 
