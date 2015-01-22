@@ -173,3 +173,43 @@ def logined_json(fn, only_staff=True):
         return HttpResponse(json_data, content_type='application/json')
 
     return wrapped
+
+
+
+
+def proxy(request, server_prefix, only_staff=True, only_superuser=False, remove_num_chars_from_path=0):
+    """
+    Proxy to other servers. The point is to use Django's auth for proxying.
+    Example:
+    server_prefix="http://localhost:1234"
+    remove_num_chars_from_path: Number of characters to be trimmed from the beginning of the request.path
+    For example when using with celery flower, if we are sending /flower/... to this view, then we need to remove /flower
+    This is usually done in Nginx but we have to do it manually here since we are sending all traffic through Django
+    """
+    if only_superuser:
+        if not request.user.is_superuser:
+            raise PermissionDenied
+    elif only_staff:
+        if not request.user.is_staff:
+            raise PermissionDenied
+
+    from django.http import HttpResponseNotAllowed
+    import requests
+
+    if request.method == 'GET':
+        requestB = request.GET
+        r = requests.get
+    elif request.method == 'POST':
+        requestB = request.POST
+        r = requests.post
+    else:
+        return HttpResponseNotAllowed("Permitted methods are POST and GET")
+    params = requestB.dict()
+    # import ipdb
+    # ipdb.set_trace()
+    if remove_num_chars_from_path:
+        url = server_prefix + request.path[remove_num_chars_from_path:]
+    else:
+        url = server_prefix + request.path
+    response = r(url, params=params)
+    return HttpResponse(response.text, status=int(response.status_code), content_type=response.headers['content-type'])
