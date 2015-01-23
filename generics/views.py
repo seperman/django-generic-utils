@@ -211,5 +211,9 @@ def proxy(request, server_prefix, only_staff=True, only_superuser=False, remove_
         url = server_prefix + request.path[remove_num_chars_from_path:]
     else:
         url = server_prefix + request.path
-    response = r(url, params=params)
+    try:
+        response = r(url, params=params)
+    except requests.exceptions.ConnectionError as e:
+        if e.message.args[1][0] == 111:
+            return HttpResponse('Connection is refused. Server must be off.', status=500)
     return HttpResponse(response.text, status=int(response.status_code), content_type=response.headers['content-type'])
