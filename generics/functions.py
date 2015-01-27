@@ -165,10 +165,10 @@ def wget(the_url, timeout=3):
         fd.raise_for_status()
         return io.BytesIO(fd.content)
     except requests.exceptions.Timeout:
-        logger.info("%s Timeout" % the_url)
+        logger.warning("%s Timeout" % the_url)
         return False
     except Exception as e:
-        logger.info("%s: %s" % (e, the_url))
+        logger.warning("%s: %s" % (e, the_url))
         return False
 
 
