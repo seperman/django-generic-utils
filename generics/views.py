@@ -37,7 +37,7 @@ def progressbarit(fn, task_key="", only_staff=True):
                 raise PermissionDenied
 
         elif not request.user.is_active:
-                raise PermissionDenied
+            raise PermissionDenied
 
         if task_key and CeleryTasks.objects.filter(key=task_key, status__in=["waiting", "active"]):
 
@@ -164,7 +164,7 @@ def logined_json(fn, only_staff=True):
                 raise PermissionDenied
 
         elif not request.user.is_active:
-                raise PermissionDenied
+            raise PermissionDenied
 
         data = fn(*args, **kwargs)
 
@@ -173,8 +173,6 @@ def logined_json(fn, only_staff=True):
         return HttpResponse(json_data, content_type='application/json')
 
     return wrapped
-
-
 
 
 def proxy(request, server_prefix, only_staff=True, only_superuser=False, remove_num_chars_from_path=0):
