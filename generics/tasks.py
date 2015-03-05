@@ -116,6 +116,9 @@ class celery_progressbar_stat(object):
         cache.replace(self.task_stat_id, self.result, time=60)
         cache.replace(self.task_msg_all_id, "", time=60)
 
+        # exit should return True once done
+        return True
+
     def get_percent(self):
         return self.result["progress_percent"]
 
