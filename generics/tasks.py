@@ -283,7 +283,7 @@ class celery_progressbar_stat_dummy(celery_progressbar_stat):
     def set_cache(self):
         pass
 
-    def report(self, msg, e=None, obj=None, field=None, fatal=False, sticky_msg=""):
+    def report(self, msg, e=None, obj=None, field=None, fatal=False, sticky_msg="", log_level="info"):
         import sys
         import traceback
         exc_type, exc_value, exc_traceback = sys.exc_info()
