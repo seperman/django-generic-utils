@@ -5,6 +5,7 @@ from generics.cache import cache
 from django.conf import settings
 from django.utils import timezone
 from time import sleep
+import re
 
 # Trying to load celery
 try:
@@ -23,7 +24,6 @@ try:
     err_msg_length = settings.GENERICS_ERR_MSG_LENGTH
 except AttributeError:
     err_msg_length = None
-
 
 import logging
 logger = logging.getLogger(__name__)
@@ -263,6 +263,8 @@ class celery_progressbar_stat_dummy(celery_progressbar_stat):
         it is used when testing the task from the command line
     """
 
+    IGNORE_EXCEPTIONS = re.compile('ignore this|ignore that', re.I)
+
     def __init__(self, task, user_id, cache_time=200):
         self.result = {'msg': "IN PROGRESS", 'sticky_msg': '', 'progress_percent': 0, 'is_killed': False,
                        'user_id': user_id, 'msg_index': 0, }
@@ -293,8 +295,9 @@ class celery_progressbar_stat_dummy(celery_progressbar_stat):
 
         print('\nCelery Task raised message:%s' % msg)
 
-        import ipdb
-        ipdb.set_trace()
+        if not self.IGNORE_EXCEPTIONS.search(msg):
+            import ipdb
+            ipdb.set_trace()
 
 
 @shared_task
