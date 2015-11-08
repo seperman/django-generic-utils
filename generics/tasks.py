@@ -4,6 +4,7 @@ from __future__ import print_function, absolute_import, division
 from generics.cache import cache
 from django.conf import settings
 from django.utils import timezone
+from django.contrib.auth.models import User
 from time import sleep
 import re
 
@@ -51,6 +52,7 @@ class celery_progressbar_stat(object):
 
     def __init__(self, task, user_id, cache_time=3000):
         self.task_id = task.request.id
+        self.user = User.objects.get(id=user_id)
         self.task_stat_id = "celery-stat-%s" % self.task_id
         self.task_kill_id = "celery-kill-%s" % self.task_id
         self.task_msg_all_id = "celery-%s-msg-all" % self.task_id
