@@ -52,7 +52,7 @@ class celery_progressbar_stat(object):
 
     def __init__(self, task, user_id, cache_time=3000):
         self.task_id = task.request.id
-        self.user = User.objects.get(id=user_id)
+        self.user = User.objects.get(id=user_id)  # user is used by other code that deal with celery progress bar
         self.task_stat_id = "celery-stat-%s" % self.task_id
         self.task_kill_id = "celery-kill-%s" % self.task_id
         self.task_msg_all_id = "celery-%s-msg-all" % self.task_id
@@ -270,6 +270,7 @@ class celery_progressbar_stat_dummy(celery_progressbar_stat):
     def __init__(self, task, user_id, cache_time=200):
         self.result = {'msg': "IN PROGRESS", 'sticky_msg': '', 'progress_percent': 0, 'is_killed': False,
                        'user_id': user_id, 'msg_index': 0, }
+        self.user = User.objects.get(id=user_id)
         self.last_err = ""
         self.task_id = "test id"
         self.task_msg_all_id = "celery-%s-msg-all" % self.task_id
